@@ -8,7 +8,6 @@ export const ThemeProvider = ({ children }) => {
   const systemScheme = Appearance.getColorScheme();
   const [theme, setTheme] = useState(systemScheme || 'light');
 
-  // Listen for system theme change
   useEffect(() => {
     const listener = Appearance.addChangeListener(({ colorScheme }) => {
       setTheme(colorScheme || 'light');
