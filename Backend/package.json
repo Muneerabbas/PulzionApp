@@ -1,17 +1,19 @@
 {
-  "name": "pulzion",
+  "name": "newspulse-backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "NewsPulse Backend API - Authentication and News Aggregation",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev":"node index.js"
+    "start": "node index.js",
+    "dev": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": ["news", "api", "authentication", "newsapi"],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "axios": "^1.6.0",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
