@@ -2,12 +2,11 @@ import { View, Text, ScrollView } from 'react-native'
 import React from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useTheme } from '../../src/context/ThemeContext'
-import { Button } from '@react-navigation/elements'
-import HomeHeader from '../components/homeheader'
+import HomeHeader from '../_components/homeheader'
 import { useT } from '../../src/utils/tMiddleware'
-import StoryList from '../components/discover'
-import HorizontalTabs from '../components/horizontalHomeTabs'
-import TrendingCollectionSlider from '../components/bottomSliders'
+import StoryList from '../_components/discover'
+import HorizontalTabs from '../_components/horizontalHomeTabs'
+import TrendingCollectionSlider from '../_components/bottomSliders'
 const home = () => {
   const { colors } = useTheme();
   const {toggleTheme} = useTheme();
