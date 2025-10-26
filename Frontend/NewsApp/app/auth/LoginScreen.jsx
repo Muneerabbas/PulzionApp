@@ -198,7 +198,6 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 32,
-    fontWeight: 'bold',
     color: '#fff',
     marginBottom: 10,
     fontFamily: 'MonaSans-Bold',
@@ -225,7 +224,6 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
     color: '#1a1a1a',
     marginBottom: 25,
     textAlign: 'center',
@@ -291,7 +289,6 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontSize: 18,
-    fontWeight: 'bold',
     fontFamily: 'MonaSans-Bold',
   },
   switchContainer: {
@@ -307,7 +304,6 @@ const styles = StyleSheet.create({
   switchLink: {
     color: '#000',
     fontSize: 14,
-    fontWeight: 'bold',
     fontFamily: 'MonaSans-Bold',
   },
 });

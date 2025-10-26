@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // Base URL for your backend API
 // Change this to your actual backend URL
 const BASE_URL = 'https://pulzionapp.onrender.com/api';
+const NEWS_API_URL='https://newsapi.org/v2'
 
 // Create axios instance
 const axiosInstance = axios.create({
@@ -45,4 +46,4 @@ axiosInstance.interceptors.response.use(
 );
 
 export default axiosInstance;
-export { BASE_URL };
+export { BASE_URL,NEWS_API_URL };

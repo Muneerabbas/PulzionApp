@@ -25,18 +25,41 @@ const DEMO_DATA = [
   },
 ];
 
-const TrendingCollectionSlider = ({ title="Trending Collection", data = DEMO_DATA }) => {
+
+
+
+const BottomSlider = ({ title="Trending Collection", data = DEMO_DATA }) => {
 const { colors } = useTheme();
-const { Tx,T, flex, fr, color, center, bg, fb, fm, fs, lh,mt,mb,br,mh } = useT();
+const { Tx,T, flex, fr, color, center, bg, fb, fm, fs, lh,mt,mb,br,mh,zi,ta,p} = useT();
   const renderItem = ({ item }) => (
     <TouchableOpacity
       style={styles.cardContainer}
-      onPress={() => console.log('Item pressed:', item.id)} 
+       onPress={async () => {
+             if (item?.url) {
+               try {
+                 await WebBrowser.openBrowserAsync(item.url);
+               } catch (e) {}
+             }
+           }}
       activeOpacity={0.8}
     >
+      
+  <View
+        style={[
+          StyleSheet.absoluteFillObject,
+          {
+            backgroundColor: colors.text,
+            opacity: 0.7, 
+            zIndex:10
+          },
+        ]}
+      />
+            <Text
+            numberOfLines={4}
+            style={T(fs(12),color(colors.primary),lh(16),zi(10000),ta('center'),mt(100),p(10))}>{item?.title}</Text>
       <Image
-        source={{ uri: item.imageUrl }}
-        style={styles.cardImage}
+        source={{ uri: item?.urlToImage }}
+        style={[styles.cardImage,StyleSheet.absoluteFillObject,]}
         resizeMode="cover"
       />
 
@@ -49,7 +72,7 @@ const { Tx,T, flex, fr, color, center, bg, fb, fm, fs, lh,mt,mb,br,mh } = useT()
       <FlatList
         data={data}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id}
+          keyExtractor={(item, index) => index.toString()}
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.flatListContent}
@@ -91,8 +114,10 @@ const styles = StyleSheet.create({
   cardImage: {
     width: '100%',
     height: '100%',
-  },
+  
     
+  },
+ 
 });
 
-export default TrendingCollectionSlider;
+export default BottomSlider;

@@ -62,7 +62,7 @@ export const useT = () => {
   const mr = (v) => ({ marginRight: v });
   const mh = (v) => ({ marginHorizontal: v });
   const mv = (v) => ({ marginVertical: v });
-
+const zi = (v) => ({ zIndex: v });
 
 
   const p = (v) => ({ padding: v });
@@ -281,5 +281,6 @@ const gap = (v) => ({ gap: v });
     mh,
     mv,
     gap,
+    zi,
   };
 };

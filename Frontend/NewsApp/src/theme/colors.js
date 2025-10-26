@@ -4,6 +4,7 @@ export const lightColors = {
   bg: '#FFFFFF',
   text: '#111827',
   muted: '#6B7280',
+  muted2:"#d3d9dd",
   border: '#E5E7EB',
   tabbarbg: '#ffffff',
 };
@@ -14,7 +15,7 @@ export const darkColors = {
   bg: '#0F172A',
   text: '#9CA3AF',
   muted:'#f8f7fa',
-  muted2: '#9CA3AF',
-  border: '#374151',
+  muted2: '#4747475c',
+  border: '#222',
   tabbarbg: '#222',
 };

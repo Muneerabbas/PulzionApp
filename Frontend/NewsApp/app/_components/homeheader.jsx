@@ -10,7 +10,7 @@ import Sun from "../../assets/icons/brightness.svg"
 import Plus from "../../assets/icons/square-plus.svg"
 import Earth from "../../assets/icons/earth-europa.svg"
 const HomeHeader = () => {
-  const {T,flex,fm,fb,fs,fr,color,center,bg,ai,jc,row,col,ph,pv,ml,br,mr,w,h,lh,mh} = useT();
+  const {T,flex,fm,fb,fs,fr,color,center,bg,ai,jc,row,col,ph,pv,ml,br,mr,w,h,lh,mh,bw,bc} = useT();
   const { colors,theme,toggleTheme} = useTheme();
   return (
     <View
@@ -19,9 +19,9 @@ const HomeHeader = () => {
     >
       {/* Left Section */}
       <View style={T(row,ai('center'))}>
-        <TouchableOpacity>
+        {/* <TouchableOpacity>
           <Back height={22} width={22} fill={colors.secondary}/>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         {/* Logo + Title */}
         <View style={T(row,ai('center'),ml(8))}>
