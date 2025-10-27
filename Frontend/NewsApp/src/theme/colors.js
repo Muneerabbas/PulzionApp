@@ -6,7 +6,8 @@ export const lightColors = {
   muted: '#6B7280',
   muted2:"#d3d9dd",
   border: '#E5E7EB',
-  tabbarbg: '#ffffff',
+  tabbarbg: '#eae8e8ff',
+  card:'#f8f8f8'
 };
 
 export const darkColors = {
@@ -17,5 +18,6 @@ export const darkColors = {
   muted:'#f8f7fa',
   muted2: '#4747475c',
   border: '#222',
+  card:'#111827',
   tabbarbg: '#222',
 };

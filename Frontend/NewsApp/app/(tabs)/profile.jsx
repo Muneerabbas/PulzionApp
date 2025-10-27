@@ -1,181 +1,256 @@
-import { View, Text, TouchableOpacity, StyleSheet, Alert, Image } from 'react-native'
-import React from 'react'
-import { SafeAreaView } from 'react-native-safe-area-context'
-import AsyncStorage from '@react-native-async-storage/async-storage'
-import { useAuth } from '../../src/context/AuthContext'
-import { useRouter } from 'expo-router'
-import { Ionicons } from '@expo/vector-icons'
+import React from "react";
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  Switch,
+  Alert,
+  ScrollView,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { useAuth } from "../../src/context/AuthContext";
+import { useTheme } from "../../src/context/ThemeContext";
+import { useT } from "../../src/utils/tMiddleware";
+import { useRouter } from "expo-router";
 
 const Profile = () => {
   const { user, logout } = useAuth();
   const router = useRouter();
+  const { colors, theme, toggleTheme } = useTheme();
+  const { T, fb, fr, color, bg, flex, ai, mv, fs } = useT();
 
   const handleLogout = () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Logout',
-          style: 'destructive',
-          onPress: async () => {
-            await logout();
-            router.replace('/auth');
-          },
+    Alert.alert("Logout", "Are you sure you want to logout?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Logout",
+        style: "destructive",
+        onPress: async () => {
+          await logout();
+          router.replace("/auth");
         },
-      ]
-    );
-  };
-
-  const handleResetIntro = () => {
-    Alert.alert(
-      'Reset Intro',
-      'This will let you see the 3-step intro screens again. Close and reopen the app after resetting.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Reset',
-          onPress: async () => {
-            await AsyncStorage.removeItem('@intro_skipped');
-            Alert.alert('Done!', 'Close the app completely and reopen it to see the intro screens again.');
-          },
-        },
-      ]
-    );
+      },
+    ]);
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerText}>Profile</Text>
-      </View>
+    <SafeAreaView style={T(flex(1), bg(colors.primary))}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.scrollContent,
+          { backgroundColor: colors.primary },
+        ]}
+      >
+        {/* Header */}
+        <Text
+          style={T(fb(20), color(colors.text), ai("center"), mv(20), fs(22))}
+        >
+          Settings
+        </Text>
 
-      <View style={styles.content}>
-        {/* Profile Info */}
-        <View style={styles.profileCard}>
-          <View style={styles.avatarContainer}>
-            {user?.photo ? (
-              <Image source={{ uri: user.photo }} style={styles.avatar} />
-            ) : (
-              <View style={styles.avatarPlaceholder}>
-                <Ionicons name="person" size={48} color="#999" />
-              </View>
-            )}
-          </View>
-
-          <Text style={styles.username}>{user?.username || 'User'}</Text>
-          <Text style={styles.email}>{user?.email || ''}</Text>
+        {/* Profile Section */}
+        <View style={styles.profileContainer}>
+          <Image
+            source={
+              user?.photo
+                ? { uri: user.photo }
+                : require("../../assets/images/default-avatar.png")
+            }
+            style={styles.avatar}
+          />
+          <Text style={[styles.username, { color: colors.text }]}>
+            {user?.username || "Jason Todd"}
+          </Text>
+          <Text style={[styles.email, { color: colors.muted }]}>
+            {user?.email || "therealjason@gmail.com"}
+          </Text>
         </View>
 
-        {/* Logout Button */}
+        {/* Activity Section */}
+        <Text style={[styles.sectionHeader, { color: colors.text }]}>
+          Your Activity
+        </Text>
+
+        <TouchableOpacity
+          style={[styles.optionCard, { backgroundColor: colors.tabbarbg }]}
+        >
+          <MaterialCommunityIcons
+            name={theme === "dark" ? "post" : "post-outline"}
+            size={22}
+            color={colors.text}
+            style={{ marginRight: 10 }}
+          />
+          <Text style={[styles.optionText, { color: colors.text }]}>
+            Published Articles
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.optionCard, { backgroundColor: colors.tabbarbg }]}
+        >
+          <Ionicons
+            name={theme === "dark" ? "heart" : "heart-outline"}
+            size={22}
+            color={colors.text}
+            style={{ marginRight: 10 }}
+          />
+          <Text style={[styles.optionText, { color: colors.text }]}>
+            Liked Articles
+          </Text>
+        </TouchableOpacity>
+
+        <Text style={[styles.sectionHeader, { color: colors.text }]}>
+          General
+        </Text>
+
+        <TouchableOpacity
+          style={[styles.optionCard, { backgroundColor: colors.tabbarbg }]}
+        >
+          <Ionicons
+            name={theme === "dark" ? "person-circle" : "person-circle-outline"}
+            size={22}
+            color={colors.text}
+            style={{ marginRight: 10 }}
+          />
+          <Text style={[styles.optionText, { color: colors.text }]}>
+            Personal Data
+          </Text>
+        </TouchableOpacity>
+
+        <View
+          style={[
+            styles.optionCard,
+            {
+              backgroundColor: colors.tabbarbg,
+              justifyContent: "space-between",
+            },
+          ]}
+        >
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Ionicons
+              name={theme === "dark" ? "moon" : "moon-outline"}
+              size={22}
+              color={colors.text}
+              style={{ marginRight: 10 }}
+            />
+            <Text style={[styles.optionText, { color: colors.text }]}>
+              Dark Theme
+            </Text>
+          </View>
+          <Switch
+            value={theme === "dark"}
+            onValueChange={toggleTheme}
+            trackColor={{ false: "#d3d3d3", true: "#007AFF" }}
+            thumbColor={theme === "dark" ? "#fff" : "#f4f3f4"}
+          />
+        </View>
+
+        <TouchableOpacity
+          style={[styles.optionCard, { backgroundColor: colors.tabbarbg }]}
+        >
+          <Ionicons
+            name={theme === "dark" ? "settings" : "settings-outline"}
+            size={22}
+            color={colors.text}
+            style={{ marginRight: 10 }}
+          />
+          <Text style={[styles.optionText, { color: colors.text }]}>
+            App Preferences
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.optionCard, { backgroundColor: colors.tabbarbg }]}
+        >
+          <Ionicons
+            name={theme=="dark" ? "help-circle" : "help-circle-outline"}
+            size={22}
+            color={colors.text}
+            style={{ marginRight: 10 }}
+          />
+          <Text style={[styles.optionText, { color: colors.text }]}>
+            Help & Support
+          </Text>
+        </TouchableOpacity>
+
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Ionicons name="log-out-outline" size={24} color="#fff" />
+          <Ionicons name="log-out-outline" size={22} color="#fff" />
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
 
-        {/* Test Button - Remove in production */}
-        <TouchableOpacity style={styles.testButton} onPress={handleResetIntro}>
-          <Ionicons name="refresh-outline" size={20} color="#666" />
-          <Text style={styles.testButtonText}>Reset Intro (Test Only)</Text>
-        </TouchableOpacity>
-      </View>
+        <Text style={[styles.footer, { color: colors.muted }]}>
+          Made with 💖 in PICT
+        </Text>
+      </ScrollView>
     </SafeAreaView>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
+  scrollContent: {
+    paddingHorizontal: 20,
+    paddingBottom: 40,
   },
-  header: {
-    padding: 20,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-  },
-  headerText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    fontFamily: 'MonaSans-Bold',
-  },
-  content: {
-    flex: 1,
-    padding: 20,
-  },
-  profileCard: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 30,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
-    marginBottom: 20,
-  },
-  avatarContainer: {
-    marginBottom: 20,
+  profileContainer: {
+    alignItems: "center",
+    marginBottom: 25,
   },
   avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-  },
-  avatarPlaceholder: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: '#f0f0f0',
-    justifyContent: 'center',
-    alignItems: 'center',
+    height: 90,
+    width: 90,
+    borderRadius: 45,
+    marginBottom: 12,
   },
   username: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    fontFamily: 'MonaSans-Bold',
+    fontSize: 20,
+    fontFamily: "MonaSans-Bold",
   },
   email: {
+    fontSize: 14,
+    fontFamily: "MonaSans-Regular",
+  },
+  sectionHeader: {
     fontSize: 16,
-    color: '#666',
-    fontFamily: 'MonaSans-Regular',
+    fontFamily: "MonaSans-Bold",
+    marginBottom: 10,
+    marginTop: 10,
+  },
+  optionCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    marginBottom: 10,
+  },
+  optionText: {
+    fontSize: 15,
+    fontFamily: "MonaSans-Medium",
   },
   logoutButton: {
-    backgroundColor: '#ff4444',
+    backgroundColor: "#FF3B30",
+    paddingVertical: 14,
     borderRadius: 12,
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
+    marginTop: 20,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 8,
   },
   logoutText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-    fontFamily: 'MonaSans-Bold',
+    color: "#fff",
+    fontSize: 16,
+    fontFamily: "MonaSans-Bold",
   },
-  testButton: {
-    backgroundColor: '#e9ecef',
-    borderRadius: 12,
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-    marginTop: 10,
-    borderWidth: 1,
-    borderColor: '#dee2e6',
-  },
-  testButtonText: {
-    color: '#666',
-    fontSize: 14,
-    fontWeight: '600',
-    fontFamily: 'MonaSans-Medium',
+  footer: {
+    textAlign: "center",
+    marginTop: 100,
+    fontSize: 13,
+    fontFamily: "MonaSans-Regular",
   },
 });
 
-export default Profile
+export default Profile;
