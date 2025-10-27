@@ -13,6 +13,9 @@ export default function TabLayout() {
         tabBarInactiveTintColor: colors.muted,
         tabBarStyle: {
           backgroundColor: colors.tabbarbg ,
+          borderRadius:35,
+          marginHorizontal:20,
+          marginBottom:20,
           // borderTopRightRadius:25,
           // borderTopLeftRadius:25,
           height:70,

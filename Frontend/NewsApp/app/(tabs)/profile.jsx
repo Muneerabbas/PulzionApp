@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   View,
   Text,
@@ -8,29 +8,29 @@ import {
   Switch,
   Alert,
   ScrollView,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../../src/context/AuthContext';
-import { useTheme } from '../../src/context/ThemeContext';
-import { useT } from '../../src/utils/tMiddleware';
-import { useRouter } from 'expo-router';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { useAuth } from "../../src/context/AuthContext";
+import { useTheme } from "../../src/context/ThemeContext";
+import { useT } from "../../src/utils/tMiddleware";
+import { useRouter } from "expo-router";
 
 const Profile = () => {
   const { user, logout } = useAuth();
   const router = useRouter();
   const { colors, theme, toggleTheme } = useTheme();
-  const { T, fb, fr, color, bg, flex, jc, ai, p, mv, mt, fs } = useT();
+  const { T, fb, fr, color, bg, flex, ai, mv, fs } = useT();
 
   const handleLogout = () => {
-    Alert.alert('Logout', 'Are you sure you want to logout?', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert("Logout", "Are you sure you want to logout?", [
+      { text: "Cancel", style: "cancel" },
       {
-        text: 'Logout',
-        style: 'destructive',
+        text: "Logout",
+        style: "destructive",
         onPress: async () => {
           await logout();
-          router.replace('/auth');
+          router.replace("/auth");
         },
       },
     ]);
@@ -44,45 +44,41 @@ const Profile = () => {
           { backgroundColor: colors.primary },
         ]}
       >
+        {/* Header */}
         <Text
-          style={T(fb(20), color(colors.text), ai('center'), mv(20), fs(22))}
+          style={T(fb(20), color(colors.text), ai("center"), mv(20), fs(22))}
         >
           Settings
         </Text>
 
+        {/* Profile Section */}
         <View style={styles.profileContainer}>
           <Image
             source={
               user?.photo
                 ? { uri: user.photo }
-                : require('../../assets/images/default-avatar.png')
+                : require("../../assets/images/default-avatar.png")
             }
             style={styles.avatar}
           />
           <Text style={[styles.username, { color: colors.text }]}>
-            {user?.username || 'Jason Todd'}
+            {user?.username || "Jason Todd"}
           </Text>
           <Text style={[styles.email, { color: colors.muted }]}>
-            {user?.email || 'therealjason@gmail.com'}
+            {user?.email || "therealjason@gmail.com"}
           </Text>
         </View>
 
-        
-
-        <Text
-          style={[
-            styles.sectionHeader,
-            { color: colors.text, marginTop: 30 },
-          ]}
-        >
+        {/* Activity Section */}
+        <Text style={[styles.sectionHeader, { color: colors.text }]}>
           Your Activity
         </Text>
 
         <TouchableOpacity
-          style={[styles.optionCard, { backgroundColor: colors.card }]}
+          style={[styles.optionCard, { backgroundColor: colors.tabbarbg }]}
         >
-          <Ionicons
-            name="newspaper-outline"
+          <MaterialCommunityIcons
+            name={theme === "dark" ? "post" : "post-outline"}
             size={22}
             color={colors.text}
             style={{ marginRight: 10 }}
@@ -93,10 +89,10 @@ const Profile = () => {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.optionCard, { backgroundColor: colors.card }]}
+          style={[styles.optionCard, { backgroundColor: colors.tabbarbg }]}
         >
           <Ionicons
-            name="heart-outline"
+            name={theme === "dark" ? "heart" : "heart-outline"}
             size={22}
             color={colors.text}
             style={{ marginRight: 10 }}
@@ -106,16 +102,15 @@ const Profile = () => {
           </Text>
         </TouchableOpacity>
 
-        {/* General Section */}
         <Text style={[styles.sectionHeader, { color: colors.text }]}>
           General
         </Text>
 
         <TouchableOpacity
-          style={[styles.optionCard, { backgroundColor: colors.card }]}
+          style={[styles.optionCard, { backgroundColor: colors.tabbarbg }]}
         >
           <Ionicons
-            name="person-outline"
+            name={theme === "dark" ? "person-circle" : "person-circle-outline"}
             size={22}
             color={colors.text}
             style={{ marginRight: 10 }}
@@ -128,12 +123,15 @@ const Profile = () => {
         <View
           style={[
             styles.optionCard,
-            { backgroundColor: colors.card, justifyContent: 'space-between' },
+            {
+              backgroundColor: colors.tabbarbg,
+              justifyContent: "space-between",
+            },
           ]}
         >
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
             <Ionicons
-              name="notifications-outline"
+              name={theme === "dark" ? "moon" : "moon-outline"}
               size={22}
               color={colors.text}
               style={{ marginRight: 10 }}
@@ -143,28 +141,41 @@ const Profile = () => {
             </Text>
           </View>
           <Switch
-            value={theme === 'dark'}
+            value={theme === "dark"}
             onValueChange={toggleTheme}
-            trackColor={{ false: '#d3d3d3', true: '#007AFF' }}
-            thumbColor={theme === 'dark' ? '#fff' : '#f4f3f4'}
+            trackColor={{ false: "#d3d3d3", true: "#007AFF" }}
+            thumbColor={theme === "dark" ? "#fff" : "#f4f3f4"}
           />
         </View>
 
         <TouchableOpacity
-          style={[styles.optionCard, { backgroundColor: colors.card }]}
+          style={[styles.optionCard, { backgroundColor: colors.tabbarbg }]}
         >
           <Ionicons
-            name="settings-outline"
+            name={theme === "dark" ? "settings" : "settings-outline"}
             size={22}
             color={colors.text}
             style={{ marginRight: 10 }}
           />
           <Text style={[styles.optionText, { color: colors.text }]}>
-            Settings
+            App Preferences
           </Text>
         </TouchableOpacity>
 
-        {/* Logout */}
+        <TouchableOpacity
+          style={[styles.optionCard, { backgroundColor: colors.tabbarbg }]}
+        >
+          <Ionicons
+            name={theme=="dark" ? "help-circle" : "help-circle-outline"}
+            size={22}
+            color={colors.text}
+            style={{ marginRight: 10 }}
+          />
+          <Text style={[styles.optionText, { color: colors.text }]}>
+            Help & Support
+          </Text>
+        </TouchableOpacity>
+
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Ionicons name="log-out-outline" size={22} color="#fff" />
           <Text style={styles.logoutText}>Logout</Text>
@@ -184,58 +195,32 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   profileContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 25,
   },
   avatar: {
-    maxHeight:90,
-    maxWidth:90,
-
+    height: 90,
+    width: 90,
     borderRadius: 45,
     marginBottom: 12,
   },
   username: {
     fontSize: 20,
-    fontFamily: 'MonaSans-Bold',
+    fontFamily: "MonaSans-Bold",
   },
   email: {
     fontSize: 14,
-    fontFamily: 'MonaSans-Regular',
-  },
-  proCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 16,
-    padding: 16,
-  },
-  proTitle: {
-    color: '#fff',
-    fontSize: 16,
-    fontFamily: 'MonaSans-Bold',
-  },
-  proSubtitle: {
-    color: '#fff',
-    fontSize: 13,
-    opacity: 0.8,
-  },
-  upgradeBtn: {
-    backgroundColor: '#fff',
-    paddingVertical: 8,
-    paddingHorizontal: 18,
-    borderRadius: 20,
-  },
-  upgradeText: {
-    color: '#007AFF',
-    fontFamily: 'MonaSans-Bold',
+    fontFamily: "MonaSans-Regular",
   },
   sectionHeader: {
     fontSize: 16,
-    fontFamily: 'MonaSans-Bold',
+    fontFamily: "MonaSans-Bold",
     marginBottom: 10,
+    marginTop: 10,
   },
   optionCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: 14,
     paddingHorizontal: 16,
     borderRadius: 12,
@@ -243,28 +228,28 @@ const styles = StyleSheet.create({
   },
   optionText: {
     fontSize: 15,
-    fontFamily: 'MonaSans-Medium',
+    fontFamily: "MonaSans-Medium",
   },
   logoutButton: {
-    backgroundColor: '#FF3B30',
+    backgroundColor: "#FF3B30",
     paddingVertical: 14,
     borderRadius: 12,
     marginTop: 20,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
     gap: 8,
   },
   logoutText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontFamily: 'MonaSans-Bold',
+    fontFamily: "MonaSans-Bold",
   },
   footer: {
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: 100,
     fontSize: 13,
-    fontFamily: 'MonaSans-Regular',
+    fontFamily: "MonaSans-Regular",
   },
 });
 

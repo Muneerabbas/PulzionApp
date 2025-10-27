@@ -6,7 +6,7 @@ export const lightColors = {
   muted: '#6B7280',
   muted2:"#d3d9dd",
   border: '#E5E7EB',
-  tabbarbg: '#ffffff',
+  tabbarbg: '#eae8e8ff',
   card:'#f8f8f8'
 };
 
