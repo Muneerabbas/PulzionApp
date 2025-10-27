@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, FlatList, Image, Dimensions, TouchableOpacity } from 'react-native';
 import { useT } from '../../src/utils/tMiddleware'
 import { useTheme } from '../../src/context/ThemeContext'
+import * as WebBrowser from 'expo-web-browser';
 const { width } = Dimensions.get('window');
 const ITEM_WIDTH = width * 0.45;
 const ITEM_HEIGHT = ITEM_WIDTH * 1.2;
@@ -49,16 +50,21 @@ const { Tx,T, flex, fr, color, center, bg, fb, fm, fs, lh,mt,mb,br,mh,zi,ta,p} =
           StyleSheet.absoluteFillObject,
           {
             backgroundColor: colors.text,
-            opacity: 0.7, 
+            opacity: 0.5, 
             zIndex:10
           },
         ]}
       />
-            <Text
+          <View style={{justifyContent:'flex-end',alignItems:'center',flex:1}}>
+
+
+              <Text
             numberOfLines={4}
-            style={T(fs(12),color(colors.primary),lh(16),zi(10000),ta('center'),mt(100),p(10))}>{item?.title}</Text>
+            style={T(fb(14),color(colors.primary),lh(16),zi(10000),ta('center'),p(10),mb(18))}>{item?.title}</Text>
+          </View>
       <Image
         source={{ uri: item?.urlToImage }}
+         blurRadius={3}
         style={[styles.cardImage,StyleSheet.absoluteFillObject,]}
         resizeMode="cover"
       />

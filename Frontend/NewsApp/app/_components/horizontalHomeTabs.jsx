@@ -443,6 +443,7 @@ useEffect(() => {
           renderItem={({ item }) => loading ? <HomeCardskeleton/> : <HomeCard item={item}/>}
           keyExtractor={(item, index) => index.toString()}
           horizontal
+          pagingEnabled
           showsHorizontalScrollIndicator={false}
           decelerationRate="fast"
           snapToInterval={CARD_WIDTH + ITEM_SPACING}
