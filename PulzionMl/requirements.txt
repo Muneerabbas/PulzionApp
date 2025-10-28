@@ -1,0 +1,27 @@
+# Core dependencies
+
+# Async HTTP requests
+aiohttp
+# MongoDB driver
+pymongo
+
+# Deep learning frameworks
+torch
+transformers
+
+# Sentence transformers for embeddings
+sentence-transformers
+
+# Keyword extraction
+keybert
+
+# Progress bars
+tqdm
+
+# Scientific computing
+numpy
+scikit-learn
+
+# Additional ML utilities
+sentencepiece
+tokenizers

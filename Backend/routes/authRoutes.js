@@ -4,6 +4,7 @@ const {
   loginUser,
   getUserProfile,
   updateUserPreferences,
+  updateProfile,
   upload,
 } = require('../controllers/authController');
 const { authMiddleware } = require('../middleware/authMiddleware');
@@ -17,5 +18,6 @@ router.post('/login', loginUser);
 // Protected routes (require authentication)
 router.get('/profile', authMiddleware, getUserProfile);
 router.put('/preferences', authMiddleware, updateUserPreferences);
+router.put('/profile', authMiddleware, upload.single('photo'), updateProfile);
 
 module.exports = router;

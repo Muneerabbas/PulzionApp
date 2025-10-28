@@ -235,37 +235,210 @@ const getUserProfile = async (req, res) => {
 // Update user preferences
 const updateUserPreferences = async (req, res) => {
   try {
-    const { categories, emailNotifications } = req.body;
+    const { preferences } = req.body;
+    const userId = req.user.id;
 
-    const user = await User.findById(req.user.id);
+    // Validate preferences
+    if (!preferences || typeof preferences !== 'object') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid preferences format',
+      });
+    }
 
-    if (!user) {
+    // Update only the preferences that are provided
+    const updateData = {};
+    
+    if (preferences.categories && Array.isArray(preferences.categories)) {
+      updateData['preferences.categories'] = preferences.categories;
+    }
+    
+    if (typeof preferences.emailNotifications === 'boolean') {
+      updateData['preferences.emailNotifications'] = preferences.emailNotifications;
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $set: updateData },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedUser) {
       return res.status(404).json({
         success: false,
         message: 'User not found',
       });
     }
 
-    if (categories) {
-      user.preferences.categories = categories;
-    }
-
-    if (emailNotifications !== undefined) {
-      user.preferences.emailNotifications = emailNotifications;
-    }
-
-    await user.save();
-
     res.json({
       success: true,
       message: 'Preferences updated successfully',
-      user: user.getPublicProfile(),
+      user: updatedUser.getPublicProfile(),
     });
-  } catch (err) {
-    console.error('Update preferences error:', err);
+  } catch (error) {
+    console.error('Update preferences error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error',
+      message: 'Server error while updating preferences',
+    });
+  }
+};
+
+// Update user profile
+const updateProfile = async (req, res) => {
+  const { username, email, currentPassword, newPassword } = req.body;
+  const userId = req.user.id;
+  const photo = req.file ? req.file.path : null;
+
+  try {
+    // Find the user
+    const user = await User.findById(userId).select('+passwordHash');
+    if (!user) {
+      // Clean up uploaded file if user not found
+      if (photo && fs.existsSync(photo)) {
+        fs.unlinkSync(photo);
+      }
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    // Object to store updates
+    const updates = {};
+    const errors = [];
+
+    // Validate and update username if provided
+    if (username && username !== user.username) {
+      if (username.length < 3) {
+        errors.push('Username must be at least 3 characters long');
+      } else if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+        errors.push('Username can only contain letters, numbers, and underscores');
+      } else {
+        // Check if username is already taken
+        const existingUser = await User.findOne({ username });
+        if (existingUser && existingUser._id.toString() !== userId) {
+          errors.push('Username is already taken');
+        } else {
+          updates.username = username.trim();
+        }
+      }
+    }
+
+    // Validate and update email if provided
+    if (email && email !== user.email) {
+      if (!/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)) {
+        errors.push('Please provide a valid email address');
+      } else {
+        // Check if email is already registered
+        const existingUser = await User.findOne({ email: email.toLowerCase() });
+        if (existingUser && existingUser._id.toString() !== userId) {
+          errors.push('Email is already registered');
+        } else {
+          updates.email = email.toLowerCase().trim();
+        }
+      }
+    }
+
+    // Handle password change if currentPassword and newPassword are provided
+    if (currentPassword && newPassword) {
+      const isMatch = await user.matchPassword(currentPassword);
+      if (!isMatch) {
+        errors.push('Current password is incorrect');
+      } else if (newPassword.length < 6) {
+        errors.push('New password must be at least 6 characters long');
+      } else {
+        updates.passwordHash = newPassword;
+      }
+    } else if ((currentPassword && !newPassword) || (!currentPassword && newPassword)) {
+      errors.push('Both current password and new password are required to change password');
+    }
+
+    // Update photo if provided
+    if (photo) {
+      // Delete old photo if it exists
+      if (user.photo && fs.existsSync(user.photo)) {
+        try {
+          fs.unlinkSync(user.photo);
+        } catch (err) {
+          console.error('Error deleting old profile photo:', err);
+        }
+      }
+      updates.photo = photo;
+    }
+
+    // Return errors if any
+    if (errors.length > 0) {
+      // Clean up uploaded file if there are errors
+      if (photo && fs.existsSync(photo)) {
+        fs.unlinkSync(photo);
+      }
+      return res.status(400).json({
+        success: false,
+        errors,
+      });
+    }
+
+    // If no updates, return current user data
+    if (Object.keys(updates).length === 0) {
+      return res.json({
+        success: true,
+        message: 'No changes detected',
+        user: user.getPublicProfile(),
+      });
+    }
+
+    // Update user
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $set: updates },
+      { new: true, runValidators: true }
+    ).select('-passwordHash');
+
+    // Get updated user profile
+    const userProfile = updatedUser.getPublicProfile();
+
+    // Generate new token if email or password was changed
+    let token;
+    if (updates.email || updates.passwordHash) {
+      token = generateToken(updatedUser._id);
+    }
+
+    res.json({
+      success: true,
+      message: 'Profile updated successfully',
+      user: userProfile,
+      ...(token && { token }), // Include new token if generated
+    });
+  } catch (error) {
+    console.error('Update profile error:', error);
+    
+    // Clean up uploaded file if there's an error
+    if (photo && fs.existsSync(photo)) {
+      fs.unlinkSync(photo);
+    }
+
+    // Handle validation errors
+    if (error.name === 'ValidationError') {
+      const errors = Object.values(error.errors).map((e) => e.message);
+      return res.status(400).json({
+        success: false,
+        errors,
+      });
+    }
+
+    // Handle duplicate key errors
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyPattern)[0];
+      return res.status(400).json({
+        success: false,
+        message: `${field.charAt(0).toUpperCase() + field.slice(1)} already exists`,
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'Server error while updating profile',
     });
   }
 };
@@ -275,5 +448,6 @@ module.exports = {
   loginUser,
   getUserProfile,
   updateUserPreferences,
+  updateProfile,
   upload,
 };
