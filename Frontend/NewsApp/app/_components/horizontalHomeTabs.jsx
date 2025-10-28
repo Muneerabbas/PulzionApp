@@ -116,7 +116,7 @@ const HomeCard = ({item}) => {
 };
 
 const HomeCardskeleton = () => {
-  const { Tx, T, row, ai, ml, mr, fb, color, lh, fr, mt, jc, br, flex, p ,fs,fm,ta,bg,h,w,bw,bc} = useT();
+  const { Tx, T, row, ai, ml, mr, fb, color, lh, fr, mt, jc, br, flex, p ,fs,fm,ta,bg,h,w,bw,bc,} = useT();
   const { colors, theme } = useTheme();
 
 
@@ -436,9 +436,10 @@ useEffect(() => {
         />
       </ScrollView>
 
-      <View style={styles.body}>
+      {
+        loading ? <HomeCardskeleton/> :<View style={styles.body}>
 
-        <FlatList
+<FlatList
           data={activeTab==0?topheadlines:activeTab==1?businessNews:activeTab==2?entertainmentNews:activeTab==3?sportsNews:activeTab==4?healthNews:activeTab==5?scienceNews:technologyNews}
           renderItem={({ item }) => loading ? <HomeCardskeleton/> : <HomeCard item={item}/>}
           keyExtractor={(item, index) => index.toString()}
@@ -456,10 +457,11 @@ useEffect(() => {
             index,
           })}
         />
+        
          <BottomSlider title={`${activeTab==0?'India':activeTab==1?'Startup':activeTab==2?'Movies':activeTab==3?'Cricket':activeTab==4?'Human Body':activeTab==5?'Physics':'Ai'}`}  data={activeTab==0?topheadlinesIndia:activeTab==1?startupNews:activeTab==2?moviesNews:activeTab==3?cricketNews:activeTab==4?bodyNews:activeTab==5?physicsNews:aiNews}/>
                  <BottomSlider title={`${activeTab==0?'USA':activeTab==1?'Stock Market':activeTab==2?'Music':activeTab==3?'Football':activeTab==4?'Fitness':activeTab==5?'Space':'Gadgets'}`}  data={activeTab==0?topheadlinesUSA:activeTab==1?stockNews:activeTab==2?musicNews:activeTab==3?footballNews:activeTab==4?fitnessNews:activeTab==5?spaceNews:gadgetsNews}/>
 
-      </View>
+      </View>}
     </SafeAreaView>
   );
 }
@@ -480,8 +482,7 @@ const styles = StyleSheet.create({
 height:400,
 width:300,
 borderRadius:20,
-// padding:16,
-// backgroundColor:'red',
+
 overflow:'hidden',
 
   }
