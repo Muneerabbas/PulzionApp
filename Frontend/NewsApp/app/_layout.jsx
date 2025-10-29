@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ThemeProvider, useTheme } from "../src/context/ThemeContext";
 import { AuthProvider, useAuth } from "../src/context/AuthContext";
-
+import { BookmarkProvider } from "../src/context/BookmarkContext";
 SplashScreen.preventAutoHideAsync();
 
 function LayoutContent() {
@@ -103,7 +103,9 @@ export default function RootLayout() {
   return (
     <ThemeProvider>
       <AuthProvider>
+        <BookmarkProvider>
         <LayoutContent />
+        </BookmarkProvider>
       </AuthProvider>
     </ThemeProvider>
   );

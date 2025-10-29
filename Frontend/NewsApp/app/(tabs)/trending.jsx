@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, Image, StyleSheet, Dimensions, Animated } from 'react-native';
+import { View, Text, Image, StyleSheet, Dimensions, Animated, ActivityIndicator } from 'react-native';
 import Swiper from 'react-native-deck-swiper';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../src/context/ThemeContext';
@@ -35,14 +35,20 @@ const Trending = () => {
   const [news, setNews] = useState([]);
   const [swipeDir, setSwipeDir] = useState(null);
   const bgAnim = useState(new Animated.Value(0))[0];
+  const [loading, setLoading] = useState(true);
 
 
   const fetchNews = useCallback(async () => {
     try {
+      setLoading(true);
       const response = await getNews();
       setNews(response.articles);
+      setSwipedAll(false);
     } catch (error) {
       console.error(error);
+    }
+    finally {
+      setLoading(false);
     }
   }, []);
 
@@ -65,9 +71,18 @@ const Trending = () => {
   });
   const [swipedAll, setSwipedAll] = useState(false);
 
-  if (swipedAll) {
+  if (loading) {
     return (
-      <View style={[styles.endContainer,{backgroundColor:colors.primary}]}>
+      <View style={[styles.endContainer, { backgroundColor: colors.primary }]}> 
+        <ActivityIndicator size="large" color={colors.secondary} />
+        <Text style={[styles.endText, { color: colors.secondary, marginTop: 12 }]}>Loading...</Text>
+      </View>
+    );
+  }
+
+  if (!loading && (swipedAll || news.length === 0)) {
+    return (
+      <View style={[styles.endContainer,{backgroundColor:colors.primary}]}> 
         <Text style={[styles.endText,{color:colors.secondary}]}>🎉 That's all for today!</Text>
       </View>
     );

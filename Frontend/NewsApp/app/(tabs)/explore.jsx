@@ -12,6 +12,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useAuth } from '../../src/context/AuthContext';
 import { useTheme } from '../../src/context/ThemeContext'; 
+import TrendingTopics from '../_components/trendingTopics';
 
 const Explore = () => {
   const { user } = useAuth();
@@ -59,7 +60,7 @@ const Explore = () => {
         />
         <TextInput
           placeholder="Search here"
-          placeholderTextColor={colors.muted2}
+          placeholderTextColor={colors.muted}
           style={[styles.input, { color: colors.text }]}
         />
         <TouchableOpacity
@@ -75,6 +76,8 @@ const Explore = () => {
           />
         </TouchableOpacity>
       </View>
+<TrendingTopics/>
+      
     </SafeAreaView>
   );
 };

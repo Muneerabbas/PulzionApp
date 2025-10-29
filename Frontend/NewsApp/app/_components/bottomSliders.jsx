@@ -3,73 +3,66 @@ import { View, Text, StyleSheet, FlatList, Image, Dimensions, TouchableOpacity }
 import { useT } from '../../src/utils/tMiddleware'
 import { useTheme } from '../../src/context/ThemeContext'
 import * as WebBrowser from 'expo-web-browser';
+import { useBookmarks } from '../../src/context/BookmarkContext';
+import { Ionicons } from '@expo/vector-icons';
 const { width } = Dimensions.get('window');
 const ITEM_WIDTH = width * 0.45;
 const ITEM_HEIGHT = ITEM_WIDTH * 1.2;
 
-const DEMO_DATA = [
-  {
-    id: '1',
-    imageUrl: 'https://images.unsplash.com/photo-1570172619614-23395d852ad6?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // Example image 1
-    },
-  {
-    id: '2',
-    imageUrl: 'https://images.unsplash.com/photo-1594738275992-0b81561f7743?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // Example image 2
-  },
-  {
-    id: '3',
-    imageUrl: 'https://images.unsplash.com/photo-1582294874312-d2789139265f?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // Example image 3
-  },
-  {
-    id: '4',
-    imageUrl: 'https://images.unsplash.com/photo-1517486804604-e221d8b943d0?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // Example image 4
-  },
-];
 
 
 
-
-const BottomSlider = ({ title="Trending Collection", data = DEMO_DATA }) => {
+const BottomSlider = ({ title="Trending Collection", data }) => {
 const { colors } = useTheme();
+const { toggleBookmark,isBookmarked } = useBookmarks();
 const { Tx,T, flex, fr, color, center, bg, fb, fm, fs, lh,mt,mb,br,mh,zi,ta,p} = useT();
   const renderItem = ({ item }) => (
-    <TouchableOpacity
+    <View
       style={styles.cardContainer}
-       onPress={async () => {
-             if (item?.url) {
-               try {
-                 await WebBrowser.openBrowserAsync(item.url);
-               } catch (e) {}
-             }
-           }}
-      activeOpacity={0.8}
     >
       
   <View
+        pointerEvents="none"
         style={[
           StyleSheet.absoluteFillObject,
           {
             backgroundColor: colors.text,
-            opacity: 0.5, 
-            zIndex:10
+            opacity: 0.8, 
+            zIndex: 1
           },
         ]}
       />
           <View style={{justifyContent:'flex-end',alignItems:'center',flex:1}}>
 
 
-              <Text
-            numberOfLines={4}
-            style={T(fb(14),color(colors.primary),lh(16),zi(10000),ta('center'),p(10),mb(18))}>{item?.title}</Text>
+              <TouchableOpacity
+                onPress={async () => {
+                  if (item?.url) {
+                    try {
+                      await WebBrowser.openBrowserAsync(item.url);
+                    } catch (e) {}
+                  }
+                }}
+                activeOpacity={0.6}
+                style={{ zIndex: 2 }}
+              >
+                <Text
+                  numberOfLines={4}
+                  style={T(fb(14),color(colors.primary),lh(16),zi(4),ta('center'),p(10),mb(18))}>{item?.title}
+                </Text>
+              </TouchableOpacity>
           </View>
       <Image
+        pointerEvents="none"
         source={{ uri: item?.urlToImage }}
          blurRadius={3}
         style={[styles.cardImage,StyleSheet.absoluteFillObject,]}
         resizeMode="cover"
       />
-
-    </TouchableOpacity>
+<TouchableOpacity onPress={()=>{toggleBookmark(item)}} style={{position:'absolute',top:10,right:10,zIndex:10}}>
+<Ionicons name={isBookmarked(item.url) ? "bookmark" : "bookmark-outline"} size={22} color= {colors.primary}/>
+</TouchableOpacity>
+    </View>
   );
 
   return (

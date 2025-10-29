@@ -19,6 +19,7 @@ import { getTopHeadlines,getBusinessNews,getEntertainmentNews,getSportsNews,getH
 import * as WebBrowser from 'expo-web-browser';
 import dayjs from 'dayjs';
 import { Ionicons } from '@expo/vector-icons';
+import { useBookmarks } from '../../src/context/BookmarkContext';
 // for trending
 // const url = 'https://newsapi.org/v2/everything?q=trending&sortBy=popularity&language=en&apiKey=04cdd66f88014fed9689e01f257ea000';
 
@@ -38,21 +39,13 @@ const TABS = ['Top Headlines', 'Business', 'Entertainment', 'Sports', 'Health', 
 const HomeCard = ({item}) => {
   const { Tx, T, row, ai, ml, mr, fb, color, lh, fr, mt, jc, br, flex, p ,fs,fm,mv} = useT();
   const { colors, theme } = useTheme();
+const { toggleBookmark,isBookmarked,addBookmark,removeBookmark } = useBookmarks();
 
 
 
 
   return (
-    <TouchableOpacity
-      onPress={async () => {
-        if (item?.url) {
-          try {
-            await WebBrowser.openBrowserAsync(item.url);
-          } catch (e) {}
-        }
-      }}
-            activeOpacity={0.8}
-
+    <View
       style={styles.maincard}
     >
       {/* 🔹 Background Image */}
@@ -61,8 +54,8 @@ const HomeCard = ({item}) => {
         style={{position:'absolute',height:'100%',width:'100%',borderRadius:20,zIndex:-1}}
         resizeMode="cover"
       />
-<TouchableOpacity onPress={()=>{}} style={{position:'absolute',top:10,right:10,zIndex:10}}>
-<Ionicons name="bookmark-outline" size={24} color="white" style={{position:'absolute',top:10,right:10}}/>
+<TouchableOpacity onPress={()=>{toggleBookmark(item)}} style={{position:'absolute',top:10,right:10,zIndex:10}}>
+<Ionicons name={isBookmarked(item.url)?"bookmark" :"bookmark-outline"} size={30} color= {colors.primary} style={{position:'absolute',top:10,right:5}}/>
 </TouchableOpacity>
 
       {/* 🔹 Overlay */}
@@ -79,12 +72,22 @@ const HomeCard = ({item}) => {
 
       {/* 🔹 Card Content */}
       <View style={Tx(p(16), jc('flex-end'), br(20), flex(1))}>
-        <Text style={[T(fb(20),color(colors.primary),lh(22),mv(10),)]}
-        numberOfLines={4}
+        <TouchableOpacity
+          onPress={async () => {
+            if (item?.url) {
+              try {
+                await WebBrowser.openBrowserAsync(item.url);
+              } catch (e) {}
+            }
+          }}
+          activeOpacity={0.7}
         >
-
-{item?.title}
-        </Text>
+          <Text style={[T(fb(20),color(colors.primary),lh(22),mv(10),)]}
+            numberOfLines={4}
+          >
+            {item?.title}
+          </Text>
+        </TouchableOpacity>
 
         <View style={Tx(row, ai('center'), 'jc-space-between', mt(16))}>
           {/* Logo And Company */}
@@ -111,24 +114,19 @@ const HomeCard = ({item}) => {
                   {/* <Text style={T(fr(12), color(colors.primary),ta('center'))}>Author {item?.author}</Text> */}
 
       </View>
-    </TouchableOpacity>
+    </View>
   );
 };
 
 const HomeCardskeleton = () => {
-  const { Tx, T, row, ai, ml, mr, fb, color, lh, fr, mt, jc, br, flex, p ,fs,fm,ta,bg,h,w,bw,bc,} = useT();
-  const { colors, theme } = useTheme();
-
-
-
+  const { Tx, T, jc, br, p, bg, h, w, mt } = useT();
+  const { colors } = useTheme();
   return (
-        <View style={[styles.maincard,Tx(bg(colors.border),jc('flex-end'),p(16),bw(1),bc(colors.border))]}>
-<View style={Tx(jc('center'),br(20),p(16),h(200),w('100%'),bg(colors.muted2))}>
-
-</View>
-
-
-        </View>
+    <View style={[styles.maincard, Tx(bg(colors.border), p(16), br(20))]}>
+      <View style={Tx(br(16), h(220), w('100%'), bg(colors.muted2))} />
+      <View style={Tx(mt(12), br(8), h(14), w('85%'), bg(colors.muted2))} />
+      <View style={Tx(mt(8), br(8), h(14), w('55%'), bg(colors.muted2))} />
+    </View>
   );
 };
 
@@ -286,7 +284,7 @@ const fetchBottomNews = async () => {
       setSpaceNews(response10.articles);
       const response11 = await getBottomNews({query:'fitness'});
       setFitnessNews(response11.articles);
-      const response12 = await getBottomNews({query:'body'});
+      const response12 = await getBottomNews({query:'medical'});
       setBodyNews(response12.articles);
       const response13 = await getBottomNews({query:'cricket'});
       setCricketNews(response13.articles);
@@ -437,11 +435,31 @@ useEffect(() => {
       </ScrollView>
 
       {
-        loading ? <HomeCardskeleton/> :<View style={styles.body}>
+        loading ? (
+          <FlatList
+            data={[0,1,2,3,4]}
+            renderItem={() => <HomeCardskeleton/>}
+            keyExtractor={(item) => `skeleton-${item}`}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            decelerationRate="fast"
+            snapToInterval={CARD_WIDTH + ITEM_SPACING}
+            snapToAlignment="center"
+            contentContainerStyle={{ paddingHorizontal: (screenWidth - CARD_WIDTH) / 6 }}
+            ItemSeparatorComponent={() => <View style={{ width: ITEM_SPACING }} />}
+            getItemLayout={(data, index) => ({
+              length: CARD_WIDTH + ITEM_SPACING,
+              offset: (CARD_WIDTH + ITEM_SPACING) * index,
+              index,
+            })}
+          />
+        ) : (
+        <View style={styles.body}>
 
 <FlatList
           data={activeTab==0?topheadlines:activeTab==1?businessNews:activeTab==2?entertainmentNews:activeTab==3?sportsNews:activeTab==4?healthNews:activeTab==5?scienceNews:technologyNews}
-          renderItem={({ item }) => loading ? <HomeCardskeleton/> : <HomeCard item={item}/>}
+          renderItem={({ item }) =>  <HomeCard item={item}/>}
           keyExtractor={(item, index) => index.toString()}
           horizontal
           pagingEnabled
@@ -449,7 +467,7 @@ useEffect(() => {
           decelerationRate="fast"
           snapToInterval={CARD_WIDTH + ITEM_SPACING}
           snapToAlignment="center"
-          contentContainerStyle={{ paddingHorizontal: (screenWidth - CARD_WIDTH) / 2 }}
+          contentContainerStyle={{ paddingHorizontal: (screenWidth - CARD_WIDTH) / 6 }}
           ItemSeparatorComponent={() => <View style={{ width: ITEM_SPACING }} />}
           getItemLayout={(data, index) => ({
             length: CARD_WIDTH + ITEM_SPACING,
@@ -458,16 +476,16 @@ useEffect(() => {
           })}
         />
         
-         <BottomSlider title={`${activeTab==0?'India':activeTab==1?'Startup':activeTab==2?'Movies':activeTab==3?'Cricket':activeTab==4?'Human Body':activeTab==5?'Physics':'Ai'}`}  data={activeTab==0?topheadlinesIndia:activeTab==1?startupNews:activeTab==2?moviesNews:activeTab==3?cricketNews:activeTab==4?bodyNews:activeTab==5?physicsNews:aiNews}/>
+         <BottomSlider title={`${activeTab==0?'India':activeTab==1?'Startup':activeTab==2?'Movies':activeTab==3?'Cricket':activeTab==4?'Medical Science':activeTab==5?'Physics':'Artificial Intelligence'}`}  data={activeTab==0?topheadlinesIndia:activeTab==1?startupNews:activeTab==2?moviesNews:activeTab==3?cricketNews:activeTab==4?bodyNews:activeTab==5?physicsNews:aiNews}/>
                  <BottomSlider title={`${activeTab==0?'USA':activeTab==1?'Stock Market':activeTab==2?'Music':activeTab==3?'Football':activeTab==4?'Fitness':activeTab==5?'Space':'Gadgets'}`}  data={activeTab==0?topheadlinesUSA:activeTab==1?stockNews:activeTab==2?musicNews:activeTab==3?footballNews:activeTab==4?fitnessNews:activeTab==5?spaceNews:gadgetsNews}/>
 
-      </View>}
+      </View>)}
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1 },
+  safe: { flex: 1 ,paddingBottom:100},
   scroll: {  position: 'relative' },
   tab: { alignItems: 'center', paddingVertical: 10 },
   text: { fontSize: 14, fontFamily: 'MonaSans-SemiBold' },
