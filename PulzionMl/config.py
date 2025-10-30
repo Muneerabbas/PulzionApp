@@ -16,7 +16,16 @@ NEWS_API_KEYS = [
     "2718cd40402447d892badee4fc1d866e",
     "9a3f2b4af1e146da8a176eae131dc26a",
     "04af2855d76c4c2fa19fbd47f8493a28",
-    "d971c798ad2a40f2b4b6777c4be38cbe"
+    "d971c798ad2a40f2b4b6777c4be38cbe",
+    "d11cbcb8ef8447e7b541e5e61ba4cc6e",
+    "4d6bebc94a5046d7bd2d64ac5331d5da",
+    "d11cbcb8ef8447e7b541e5e61ba4cc6e",
+    "9b3d22d01ec940c49dc1fcd3f5382bd1",
+    "76da2d3934664b77a5bed306b8666629",
+ "b97d37f3f4e548fe91a24beaaac7571a",
+    "b08088f40be54ad09c3a4f63a42bacf1",
+    "8bbe5a89d3304a0ba4227415c148b9c3",
+    "01d9ee4aaee04beb96047ccfcd0a4e34",
     # Add more API keys below:
     # "your_second_api_key_here",
     # "your_third_api_key_here",

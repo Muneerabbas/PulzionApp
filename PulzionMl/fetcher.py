@@ -120,6 +120,7 @@ class ArticleFetcher:
             "source": article.get("source", {}).get("name", "Unknown"),
             "author": article.get("author", "Unknown"),
             "published_at": article.get("publishedAt", ""),
+            "urlToImage": article.get("urlToImage"),  # Add image URL from API
             "search_topic": search_topic,
             "fetched_at": datetime.utcnow().isoformat(),
         }
