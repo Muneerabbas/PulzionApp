@@ -128,7 +128,6 @@ async def run_pipeline(
         storage = ArticleStorage()
         logger.info("")
         
-        # ============ STAGE 1: FETCH ARTICLES ============
         if not skip_fetch:
             logger.info("="*80)
             logger.info("📰 STAGE 1: FETCHING ARTICLES")
@@ -209,14 +208,12 @@ async def run_pipeline(
             stats.record_stage("3. Label Articles", stage_duration)
             logger.info("")
         
-        # ============ STAGE 4: GENERATE EMBEDDINGS ============
         if not skip_embeddings and config.ENABLE_EMBEDDINGS:
             logger.info("="*80)
             logger.info("🧮 STAGE 4: GENERATING EMBEDDINGS")
             logger.info("="*80)
             stage_start = time.time()
             
-            # Get articles without embeddings
             articles_to_embed = storage.get_articles_without_field('embedding', limit=5000)
             
             if articles_to_embed:
