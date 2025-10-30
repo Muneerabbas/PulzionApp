@@ -64,7 +64,7 @@ const { toggleBookmark,isBookmarked,addBookmark,removeBookmark } = useBookmarks(
           StyleSheet.absoluteFillObject,
           {
             backgroundColor: colors.text,
-            opacity: 0.7, 
+            opacity: 0.5, 
             borderRadius: 20,
           },
         ]}
@@ -82,7 +82,7 @@ const { toggleBookmark,isBookmarked,addBookmark,removeBookmark } = useBookmarks(
           }}
           activeOpacity={0.7}
         >
-          <Text style={[T(fb(20),color(colors.primary),lh(22),mv(10),)]}
+          <Text style={[T(fb(20),color(colors.primary),lh(22),mv(10),),{zIndex:10}]}
             numberOfLines={4}
           >
             {item?.title}
