@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, Image, StyleSheet, Dimensions, Animated, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { View, Text, Image, StyleSheet, Dimensions, Animated, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import Swiper from 'react-native-deck-swiper';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../src/context/ThemeContext';
@@ -36,6 +37,7 @@ const Trending = () => {
   const [swipeDir, setSwipeDir] = useState(null);
   const bgAnim = useState(new Animated.Value(0))[0];
   const [loading, setLoading] = useState(true);
+  const swiperRef = useRef(null);
 
 
   const fetchNews = useCallback(async () => {
@@ -111,25 +113,52 @@ const Trending = () => {
       </Animated.View>
 
       {news.length > 0 && (
-        <Swiper
-          cards={news}
-          renderCard={(card) => <Card item={card} colors={colors} />}
-          backgroundColor="transparent"
-          stackSize={3}
+        <>
+          <Swiper
+            ref={swiperRef}
+            cards={news}
+            renderCard={(card) => <Card item={card} colors={colors} />}
+            backgroundColor="transparent"
+            stackSize={3}
+            stackSeparation={-15}
+            stackScale={10}
+            disableTopSwipe={false}
+            disableBottomSwipe
+            onSwiping={(x) => {
+              if (x > 0) setSwipeDir('right');
+              else if (x < 0) setSwipeDir('left');
+              else setSwipeDir(null);
+            }}
+            onSwiped={() => setSwipeDir(null)}
+            onSwipedAll={() => { setSwipeDir(null); setSwipedAll(true); }}
+          />
 
-stackSeparation={-15}  
-stackScale={10}     
-          disableTopSwipe
-          disableBottomSwipe
-          
-          onSwiping={(x) => {
-            if (x > 0) setSwipeDir('right');
-            else if (x < 0) setSwipeDir('left');
-            else setSwipeDir(null);
-          }}
-          onSwiped={() => setSwipeDir(null)}
-          onSwipedAll={() => {setSwipeDir(null);setSwipedAll(true)}}
-        />
+          <View style={styles.controlsContainer}>
+            <TouchableOpacity
+              onPress={() => swiperRef.current?.swipeLeft()}
+              style={[styles.controlButton, { backgroundColor: 'rgba(255,0,0,0.15)', borderColor: 'rgba(255,0,0,0.3)' }]}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="thumbs-down" size={22} color="#ff4d4f" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => swiperRef.current?.swipeTop()}
+              style={[styles.controlButton, { backgroundColor: 'rgba(128,128,128,0.15)', borderColor: 'rgba(128,128,128,0.3)' }]}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="remove-circle" size={22} color="#8c8c8c" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => swiperRef.current?.swipeRight()}
+              style={[styles.controlButton, { backgroundColor: 'rgba(0,200,0,0.15)', borderColor: 'rgba(0,200,0,0.3)' }]}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="thumbs-up" size={22} color="#1fc16b" />
+            </TouchableOpacity>
+          </View>
+        </>
       )}
     </View>
   );
@@ -137,6 +166,25 @@ stackScale={10}
 
 const styles = StyleSheet.create({
   container: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  controlsContainer: {
+    position: 'absolute',
+    bottom: 24,
+    width: width * 0.85,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  controlButton: {
+    flex: 1,
+    marginHorizontal: 6,
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    alignItems: 'center',
+  },
+  controlText: {
+    fontFamily: 'MonaSans-Bold',
+    fontSize: 14,
+  },
   card: {
     borderRadius: 20,
     padding: 5,

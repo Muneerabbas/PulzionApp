@@ -3,10 +3,10 @@ import { View, Text, Image, FlatList, TouchableOpacity } from "react-native";
 import { useTheme } from "../../src/context/ThemeContext";
 const data = [
   { id: "1", type: "discover" },
-  { id: "2", image: require("../../assets/user.png") },
-  { id: "3", image: require("../../assets/user.png") },
-  { id: "4", image: require("../../assets/user.png") },
-  { id: "5", image: require("../../assets/user.png") },
+  { id: "4", image: require("../../assets/image2.png") },
+  { id: "3", image: require("../../assets/image1.png") },
+  { id: "2", image: require("../../assets/image.png") },
+  { id: "5", image: require("../../assets/image3.png") },
 ];
 
 
