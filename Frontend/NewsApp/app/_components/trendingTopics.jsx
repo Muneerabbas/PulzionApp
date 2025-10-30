@@ -12,8 +12,8 @@ const topics = [
     views: '12.4k views',
     image: 'https://mcdn.wallpapersafari.com/medium/55/52/3wmtVC.jpg',
     size: 140,
-    top: 60,
-    left: width / 2 - 70,
+    top: 80,
+    left: width / 2 - 80,
   },
   {
     name: 'D trump',
@@ -37,7 +37,7 @@ const topics = [
     image: 'https://media.glamourmagazine.co.uk/photos/64ccca835c915d8a7f4f8bb8/16:9/w_2560%2Cc_limit/BILLIE%2520EILISH%2520040823%2520DEFAULT-GettyImages-1201586589.jpg',
     size: 90,
     top: 40,
-    left: width / 2 + 70,
+    left: width / 2 + 55,
   },
   {
     name: 'Dua Lipa',
@@ -52,7 +52,7 @@ const topics = [
     views: '3.4k views',
     image: 'https://upload.wikimedia.org/wikipedia/commons/9/9f/Elliot_Page_2014.jpg',
     size: 65,
-    top: 180,
+    top: 200,
     left: width / 2 - 110,
   },
 ];
@@ -100,7 +100,7 @@ const TrendingTopics = () => {
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: 30,
+    paddingTop: 20,
   },
   heading: {
     fontSize: 22,
