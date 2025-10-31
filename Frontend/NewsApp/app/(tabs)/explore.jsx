@@ -193,7 +193,7 @@ const fetchAllStocks = async () => {
         showsVerticalScrollIndicator={false}
       > 
 <TrendingTopics/>
-      {/* Sentiment legend (static UI) */}
+      {/* Sentiment legend*/}
       <View style={[styles.cardWrap, { backgroundColor: colors.border, borderColor: colors.border }]}> 
         <Text style={[styles.sectionTitle, { color: colors.secondary }]}>Sentiment spectrum</Text>
         <LinearGradient

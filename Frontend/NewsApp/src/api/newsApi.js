@@ -1,7 +1,7 @@
 import { NEWS_API_URL } from "./axiosInstance.js";
 import axios from "axios";
 
-const API_KEY = '7be1bf33897b47e0ab16c88599ac658f';
+const API_KEY = 'b97d37f3f4e548fe91a24beaaac7571a';
 
 export const getNews = async () => {
         try {
@@ -12,9 +12,13 @@ export const getNews = async () => {
         }
 };
 
-export const getAllNews = async () => {
+export const getAllNews = async (n) => {
         try {
-            const response = await axios.get(`${NEWS_API_URL}/everything?q=trending&apiKey=${API_KEY}`);
+            if(!n){
+                const response = await axios.get(`${NEWS_API_URL}/top-headlines?language=en&apiKey=${API_KEY}`);
+                return response;
+            }
+            const response = await axios.get(`${NEWS_API_URL}/top-headlines?sources=${n}&apiKey=${API_KEY}`);
             return response;
         } catch (error) {
             throw error.response?.data || { message: 'Failed to fetch news' };
