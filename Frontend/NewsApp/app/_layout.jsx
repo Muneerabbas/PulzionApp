@@ -7,6 +7,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ThemeProvider, useTheme } from "../src/context/ThemeContext";
 import { AuthProvider, useAuth } from "../src/context/AuthContext";
 import { BookmarkProvider } from "../src/context/BookmarkContext";
+import 'react-native-reanimated';
+import { enableLayoutAnimation } from 'react-native-reanimated';
 SplashScreen.preventAutoHideAsync();
 
 function LayoutContent() {

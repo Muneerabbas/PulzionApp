@@ -1,12 +1,21 @@
 import { NEWS_API_URL } from "./axiosInstance.js";
 import axios from "axios";
 
-const API_KEY = '2718cd40402447d892badee4fc1d866e';
+const API_KEY = '8bbe5a89d3304a0ba4227415c148b9c3';
 
 export const getNews = async () => {
         try {
             const response = await axios.get(`${NEWS_API_URL}/everything?q=trending&sortBy=popularity&language=en&apiKey=${API_KEY}`);
             return response.data;
+        } catch (error) {
+            throw error.response?.data || { message: 'Failed to fetch news' };
+        }
+};
+
+export const getAllNews = async () => {
+        try {
+            const response = await axios.get(`${NEWS_API_URL}/everything?q=trending&apiKey=${API_KEY}`);
+            return response;
         } catch (error) {
             throw error.response?.data || { message: 'Failed to fetch news' };
         }

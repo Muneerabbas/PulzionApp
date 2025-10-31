@@ -6,6 +6,7 @@ import { useTheme } from '../../src/context/ThemeContext'
 import dayjs from 'dayjs'
 import { Ionicons } from '@expo/vector-icons'
 import * as WebBrowser from 'expo-web-browser';
+import Stories from '../_components/story'
 
 const { width } = Dimensions.get('window')
 
@@ -44,6 +45,8 @@ const bookmark = () => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.primary }]}> 
+      
+      
       <Text style={[styles.title, { color: colors.secondary, padding: 16, fontSize: 20, fontFamily: 'MonaSans-Bold',textAlign: 'center' }]}>Bookmarks</Text>
       <FlatList
         data={bookmarks}

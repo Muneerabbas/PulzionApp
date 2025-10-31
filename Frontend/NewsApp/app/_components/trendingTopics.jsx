@@ -70,8 +70,8 @@ const TrendingTopics = () => {
         pointerEvents="none"
       />
       <View style={styles.cardTextWrap}>
-        <Text numberOfLines={1} style={[styles.name, { color: colors.primary }]}>{item.name}</Text>
-        <Text numberOfLines={1} style={[styles.views, { color: colors.muted }]}>{item.views}</Text>
+        <Text numberOfLines={1} style={[styles.name, { color: '#ffffff'}]}>{item.name}</Text>
+        <Text numberOfLines={1} style={[styles.views, { color: '#ffffff'}]}>{item.views}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -93,7 +93,7 @@ const TrendingTopics = () => {
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 20,
+    // paddingTop: 20,
     paddingBottom: 6,
   },
   heading: {

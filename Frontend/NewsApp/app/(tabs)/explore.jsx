@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -15,19 +15,95 @@ import { useAuth } from '../../src/context/AuthContext';
 import { useTheme } from '../../src/context/ThemeContext'; 
 import TrendingTopics from '../_components/trendingTopics';
 import { LinearGradient } from 'expo-linear-gradient';
-
+import { getStockQuote } from '../../src/api/stocksApi';
+import Animated, {
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  useSharedValue,
+  interpolate,
+  Extrapolate,
+} from "react-native-reanimated";
 const Explore = () => {
   const { user } = useAuth();
-  const { colors } = useTheme();    
+  const { colors } = useTheme();
+    const scrollY = useSharedValue(0);
+    const onScroll = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y;
+    },
+  });
+   
+
+  const headerHeight = useAnimatedStyle(() => {
+    const height = interpolate(
+      scrollY.value,
+      [0, 100],
+      [60, 0],
+      Extrapolate.CLAMP
+    );
+    const marginBottom = interpolate(
+      scrollY.value,
+      [0, 100],
+      [20, 0],
+      Extrapolate.CLAMP
+    );
+    const opacity = interpolate(
+      scrollY.value,
+      [0, 60],
+      [1, 0],
+      Extrapolate.CLAMP
+    );
+    return {
+      height,
+      marginBottom,
+      opacity,
+    };
+  });
+  
+
+const topCompanies = [
+ {  sym: "AAPL",name: "Apple"      },    
+ {  sym: "GOOGL",name: "Google"     },     
+ {  sym: "MSFT",name: "Microsoft"      },      
+ {  sym: "AMZN",name: "Amazon"    },    
+ {  sym: "META",name: "Meta"     },     
+ {  sym: "TSLA",name: "Tesla"      },      
+ {  sym: "NFLX",name: "Netflix"    },       
+ {  sym: "INFY",name: "Infosys"    },     
+];
+  const [stocks, setStocks] = useState([]);
+  const [searchMode, setSearchMode] = useState('Search');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+const fetchAllStocks = async () => {
+  try {
+    const results = await Promise.all(
+      topCompanies.map(async (company) => {
+        const stockData = await getStockQuote(company.sym);
+        return {
+          name: company.name,
+          sym: company.sym,
+          ...stockData,
+        };
+      })
+    );
+    setStocks(results); 
+    console.log(results);
+  } catch (error) {
+    console.error("Error fetching stocks:", error);
+  }
+};
+
+
+   useEffect(() => {
+    
+    fetchAllStocks();
+  },[]);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.primary }]}> 
-      <ScrollView 
-        style={[{ flex: 1 }]} 
-        contentContainerStyle={{ paddingBottom: 150 }} 
-        showsVerticalScrollIndicator={false}
-      > 
-      <View style={styles.header}>
+     
+      <Animated.View style={[styles.header,headerHeight]}>
         <View>
           <View style={{flexDirection:'row',gap:5}}>
 <Text style={[styles.greeting, { color: colors.text }]}>
@@ -56,9 +132,9 @@ const Explore = () => {
   />
 </TouchableOpacity>
 
-      </View>
-
-      <View
+      </Animated.View>
+{/* SEarch Bar */}
+      <Animated.View
         style={[
           styles.searchBar,
           { backgroundColor: colors.tabbarbg, borderColor: colors.border },
@@ -71,23 +147,51 @@ const Explore = () => {
           style={{ marginHorizontal: 8 }}
         />
         <TextInput
-          placeholder="Search here"
+          placeholder='Search here'
           placeholderTextColor={colors.muted}
           style={[styles.input, { color: colors.text }]}
         />
-        <TouchableOpacity
-          style={[styles.dropdown, { backgroundColor: colors.primary }]}
-        >
-          <Text style={[styles.dropdownText, { color: colors.text }]}>
-            Search
-          </Text>
-          <MaterialIcons
-            name="keyboard-arrow-right"
-            size={20}
-            color={colors.text}
-          />
-        </TouchableOpacity>
-      </View>
+        <View>
+          <TouchableOpacity
+            onPress={() => setIsDropdownOpen((v) => !v)}
+            style={[styles.dropdown, { backgroundColor: colors.primary }]}
+          >
+            <Text style={[styles.dropdownText, { color: colors.text }]}>
+              {searchMode}
+            </Text>
+            <MaterialIcons
+              name={isDropdownOpen ? 'keyboard-arrow-up' : 'keyboard-arrow-down'}
+              size={20}
+              color={colors.text}
+            />
+          </TouchableOpacity>
+          {isDropdownOpen && (
+            <View style={[styles.dropdownMenu, { backgroundColor: colors.card, borderColor: colors.border,zIndex:3 }]}> 
+              <TouchableOpacity
+                style={styles.dropdownItem}
+                onPress={() => { setSearchMode('Search'); setIsDropdownOpen(false); }}
+              >
+                <Text style={[styles.dropdownItemText, { color: colors.text }]}>Search</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.dropdownItem}
+                onPress={() => { setSearchMode('🤓 Smart Search'); setIsDropdownOpen(false); }}
+              >
+                <Text style={[styles.dropdownItemText, { color: colors.text }]}>🤓 Smart Search</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      </Animated.View>
+
+
+       <Animated.ScrollView 
+        style={[{ flex: 1 }]}
+        contentContainerStyle={{ paddingBottom: 150 }} 
+        onScroll={onScroll}
+        scrollEventThrottle={16}
+        showsVerticalScrollIndicator={false}
+      > 
 <TrendingTopics/>
       {/* Sentiment legend (static UI) */}
       <View style={[styles.cardWrap, { backgroundColor: colors.border, borderColor: colors.border }]}> 
@@ -105,7 +209,6 @@ const Explore = () => {
         </View>
       </View>
 
-      {/* Static summary cards (placeholder UI) */}
       <View style={styles.summaryRow}>
         <View style={[styles.summaryCard, { backgroundColor: colors.border }]}>
           <Text style={[styles.summaryTitle, { color: colors.muted }]}>Negative</Text>
@@ -121,44 +224,34 @@ const Explore = () => {
         </View>
       </View>
       
-      {/* Top companies (UI only) */}
       <View style={[styles.cardWrap, { backgroundColor: colors.border, borderColor: colors.border }]}> 
         <Text style={[styles.sectionTitle, { color: colors.secondary }]}>Top companies</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 4 }}>
-          {[
-            { sym: 'AAPL', name: 'Apple', price: '226.34', chg: '+1.2%', up: true },
-            { sym: 'MSFT', name: 'Microsoft', price: '428.17', chg: '+0.6%', up: true },
-            { sym: 'GOOGL', name: 'Alphabet', price: '176.22', chg: '-0.4%', up: false },
-            { sym: 'AMZN', name: 'Amazon', price: '182.09', chg: '+0.9%', up: true },
-            { sym: 'TSLA', name: 'Tesla', price: '208.51', chg: '-1.8%', up: false },
-            { sym: 'META', name: 'Meta', price: '501.66', chg: '+0.3%', up: true },
-          ].map((c, i) => (
+          {stocks.map((c, i) => (
             <View key={c.sym} style={[styles.stockCard, { backgroundColor: colors.tabbarbg, borderColor: colors.border }]}>
               <View style={styles.stockHeader}>
-                <Text style={[styles.stockSym, { color: colors.secondary }]}>{c.sym}</Text>
-                <View style={[styles.badge, { backgroundColor: c.up ? '#16a34a' : '#dc2626' }]}>
-                  <Text style={styles.badgeText}>{c.chg}</Text>
+                <Text style={[styles.stockSym, { color: colors.secondary }]}>{c?.name}</Text>
+                <View style={[styles.badge, { backgroundColor: c?.dp > 0 ? '#16a34a' : '#dc2626' }]}>
+                  <Text style={styles.badgeText}>{c?.dp.toFixed(2)} %</Text>
                 </View>
               </View>
-              <Text style={[styles.stockName, { color: colors.muted }]}>{c.name}</Text>
-              <Text style={[styles.stockPrice, { color: colors.text }]}>{c.price}</Text>
+              <Text style={[styles.stockName, { color: colors.muted }]}>{c?.sym}</Text>
+              <Text style={[styles.stockPrice, { color: colors.text }]}>$ {c?.c.toFixed(2)}</Text>
               <View style={styles.sparkRow}>
-                {Array.from({ length: 16 }).map((_, j) => (
                   <View
-                    key={`${c.sym}-${j}`}
                     style={[
-                      styles.sparkBar,
-                      { height: 4 + (((j + (c.up ? 1 : 3)) % 6) * 2), backgroundColor: c.up ? '#16a34a' : '#dc2626' },
+                      
+                      { height: 50, backgroundColor: c?.dp > 0 ? '#16a34a' : '#dc2626', },
                     ]}
                   />
-                ))}
+             
               </View>
             </View>
           ))}
         </ScrollView>
       </View>
-      
-    </ScrollView>
+          </Animated.ScrollView>
+
     </SafeAreaView>
   );
 };
@@ -206,6 +299,10 @@ avatar: {
     paddingHorizontal: 8,
     paddingVertical: 6,
     borderWidth: 1,
+    marginBottom:20,
+    position: 'relative',
+    overflow: 'visible',
+    zIndex: 20,
   },
   input: {
     flex: 1,
@@ -223,6 +320,25 @@ avatar: {
     fontSize: 14,
     marginRight: 2,
     fontFamily:"MonaSans-Regular"
+  },
+  dropdownMenu: {
+    position: 'absolute',
+    top: 42,
+    right: 0,
+    borderRadius: 12,
+    borderWidth: 1,
+    overflow: 'hidden',
+    minWidth: 140,
+    zIndex: 30,
+    elevation: 30,
+  },
+  dropdownItem: {
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+  },
+  dropdownItemText: {
+    fontSize: 14,
+    fontFamily: 'MonaSans-Regular',
   },
   cardWrap: {
     marginTop: 12,
@@ -274,7 +390,7 @@ avatar: {
   },
   /* Stocks */
   stockCard: {
-    width: 160,
+    width: 150,
     borderRadius: 14,
     borderWidth: 1,
     padding: 12,

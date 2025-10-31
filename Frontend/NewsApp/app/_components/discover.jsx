@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, Image, FlatList, TouchableOpacity } from "react-native";
+import { useRouter } from "expo-router";
 import { useTheme } from "../../src/context/ThemeContext";
 const data = [
   { id: "1", type: "discover" },
@@ -12,6 +13,7 @@ const data = [
 
 const StoryCircle = ({ item }) => {
     const {colors} = useTheme();
+    const router = useRouter();
   if (item.type === "discover") {
     return (
       <View
@@ -30,6 +32,9 @@ const StoryCircle = ({ item }) => {
             backgroundColor: colors.secondary,
             alignItems: "center",
             justifyContent: "center",
+          }}
+          onPress={() => {
+            router.push('/stories');
           }}
         >
           <Text style={{ color: colors.primary, fontSize: 10, fontFamily: "MonaSans-Medium" }}>
