@@ -5,7 +5,9 @@ const authRoutes = require('./routes/authRoutes');
 const newsRoutes = require('./routes/newsRoutes');
 const cors = require('cors');
 const path = require('path');
-const recommendRoutes = require('./routes/recommendRoutes'); // ← ADD THIS
+const recommendRoutes = require('./routes/recommendRoutes'); 
+const statsRoutes = require('./routes/statsRoutes'); 
+
 dotenv.config();
 connectDB();
 
@@ -34,7 +36,9 @@ app.get('/health', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/news', newsRoutes);
-app.use('/api/recommend', recommendRoutes); // ← ADD THIS
+app.use('/api/recommend', recommendRoutes); 
+app.use('/api/stats', statsRoutes);
+
 app.use((req, res) => {
   res.status(404).json({
     success: false,

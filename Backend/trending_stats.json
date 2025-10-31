@@ -1,0 +1,718 @@
+{
+  "generated_at": "2025-10-31T23:12:06.688829",
+  "total_articles": 7631,
+  "sentiment_stats": {
+    "total_articles": 7631,
+    "positive": 18.25,
+    "negative": 10.73,
+    "neutral": 35.33,
+    "unknown": 35.68,
+    "counts": {
+      "neutral": 2696,
+      "positive": 1393,
+      "negative": 819,
+      "unknown": 2723
+    }
+  },
+  "keyword_stats": {
+    "top_keywords": [
+      {
+        "keyword": "2025",
+        "volume": 108,
+        "positive_pct": 35.19,
+        "negative_pct": 10.19,
+        "neutral_pct": 54.63,
+        "sentiment_trend": "positive"
+      },
+      {
+        "keyword": "chars",
+        "volume": 72,
+        "positive_pct": 27.78,
+        "negative_pct": 9.72,
+        "neutral_pct": 62.5,
+        "sentiment_trend": "positive"
+      },
+      {
+        "keyword": "issues browser",
+        "volume": 41,
+        "positive_pct": 0.0,
+        "negative_pct": 92.68,
+        "neutral_pct": 7.32,
+        "sentiment_trend": "negative"
+      },
+      {
+        "keyword": "galaxy xr",
+        "volume": 38,
+        "positive_pct": 78.95,
+        "negative_pct": 5.26,
+        "neutral_pct": 15.79,
+        "sentiment_trend": "positive"
+      },
+      {
+        "keyword": "try",
+        "volume": 31,
+        "positive_pct": 0.0,
+        "negative_pct": 93.55,
+        "neutral_pct": 6.45,
+        "sentiment_trend": "negative"
+      },
+      {
+        "keyword": "disable ad",
+        "volume": 28,
+        "positive_pct": 0.0,
+        "negative_pct": 100.0,
+        "neutral_pct": 0.0,
+        "sentiment_trend": "negative"
+      },
+      {
+        "keyword": "aws outage",
+        "volume": 27,
+        "positive_pct": 0.0,
+        "negative_pct": 66.67,
+        "neutral_pct": 33.33,
+        "sentiment_trend": "negative"
+      },
+      {
+        "keyword": "white house",
+        "volume": 27,
+        "positive_pct": 0.0,
+        "negative_pct": 33.33,
+        "neutral_pct": 66.67,
+        "sentiment_trend": "negative"
+      },
+      {
+        "keyword": "return false",
+        "volume": 25,
+        "positive_pct": 0.0,
+        "negative_pct": 24.0,
+        "neutral_pct": 76.0,
+        "sentiment_trend": "negative"
+      },
+      {
+        "keyword": "load",
+        "volume": 25,
+        "positive_pct": 0.0,
+        "negative_pct": 100.0,
+        "neutral_pct": 0.0,
+        "sentiment_trend": "negative"
+      },
+      {
+        "keyword": "open href",
+        "volume": 25,
+        "positive_pct": 0.0,
+        "negative_pct": 28.0,
+        "neutral_pct": 72.0,
+        "sentiment_trend": "negative"
+      },
+      {
+        "keyword": "xr headset",
+        "volume": 24,
+        "positive_pct": 87.5,
+        "negative_pct": 4.17,
+        "neutral_pct": 8.33,
+        "sentiment_trend": "positive"
+      },
+      {
+        "keyword": "just",
+        "volume": 22,
+        "positive_pct": 31.82,
+        "negative_pct": 27.27,
+        "neutral_pct": 40.91,
+        "sentiment_trend": "positive"
+      },
+      {
+        "keyword": "elon musk",
+        "volume": 21,
+        "positive_pct": 14.29,
+        "negative_pct": 23.81,
+        "neutral_pct": 61.9,
+        "sentiment_trend": "negative"
+      },
+      {
+        "keyword": "getty images",
+        "volume": 21,
+        "positive_pct": 23.81,
+        "negative_pct": 9.52,
+        "neutral_pct": 66.67,
+        "sentiment_trend": "positive"
+      },
+      {
+        "keyword": "government shutdown",
+        "volume": 21,
+        "positive_pct": 9.52,
+        "negative_pct": 33.33,
+        "neutral_pct": 57.14,
+        "sentiment_trend": "negative"
+      },
+      {
+        "keyword": "diffe 12",
+        "volume": 21,
+        "positive_pct": 0.0,
+        "negative_pct": 100.0,
+        "neutral_pct": 0.0,
+        "sentiment_trend": "negative"
+      },
+      {
+        "keyword": "apple vision",
+        "volume": 20,
+        "positive_pct": 80.0,
+        "negative_pct": 5.0,
+        "neutral_pct": 15.0,
+        "sentiment_trend": "positive"
+      },
+      {
+        "keyword": "_blank 200",
+        "volume": 19,
+        "positive_pct": 0.0,
+        "negative_pct": 26.32,
+        "neutral_pct": 73.68,
+        "sentiment_trend": "negative"
+      },
+      {
+        "keyword": "warner bros",
+        "volume": 17,
+        "positive_pct": 0.0,
+        "negative_pct": 23.53,
+        "neutral_pct": 76.47,
+        "sentiment_trend": "negative"
+      },
+      {
+        "keyword": "check connection",
+        "volume": 17,
+        "positive_pct": 0.0,
+        "negative_pct": 88.24,
+        "neutral_pct": 11.76,
+        "sentiment_trend": "negative"
+      },
+      {
+        "keyword": "globe newswire",
+        "volume": 17,
+        "positive_pct": 41.18,
+        "negative_pct": 0.0,
+        "neutral_pct": 58.82,
+        "sentiment_trend": "positive"
+      },
+      {
+        "keyword": "using diffe",
+        "volume": 16,
+        "positive_pct": 0.0,
+        "negative_pct": 81.25,
+        "neutral_pct": 18.75,
+        "sentiment_trend": "negative"
+      },
+      {
+        "keyword": "october 2025",
+        "volume": 16,
+        "positive_pct": 31.25,
+        "negative_pct": 0.0,
+        "neutral_pct": 68.75,
+        "sentiment_trend": "positive"
+      },
+      {
+        "keyword": "apple tv",
+        "volume": 16,
+        "positive_pct": 62.5,
+        "negative_pct": 0.0,
+        "neutral_pct": 37.5,
+        "sentiment_trend": "positive"
+      },
+      {
+        "keyword": "appeared kotaku",
+        "volume": 15,
+        "positive_pct": 13.33,
+        "negative_pct": 33.33,
+        "neutral_pct": 53.33,
+        "sentiment_trend": "negative"
+      },
+      {
+        "keyword": "trump",
+        "volume": 15,
+        "positive_pct": 6.67,
+        "negative_pct": 6.67,
+        "neutral_pct": 86.67,
+        "sentiment_trend": "neutral"
+      },
+      {
+        "keyword": "href _blank",
+        "volume": 15,
+        "positive_pct": 0.0,
+        "negative_pct": 40.0,
+        "neutral_pct": 60.0,
+        "sentiment_trend": "negative"
+      },
+      {
+        "keyword": "women cricket",
+        "volume": 15,
+        "positive_pct": 53.33,
+        "negative_pct": 0.0,
+        "neutral_pct": 46.67,
+        "sentiment_trend": "positive"
+      },
+      {
+        "keyword": "li li",
+        "volume": 15,
+        "positive_pct": 46.67,
+        "negative_pct": 20.0,
+        "neutral_pct": 33.33,
+        "sentiment_trend": "positive"
+      },
+      {
+        "keyword": "2026",
+        "volume": 14,
+        "positive_pct": 50.0,
+        "negative_pct": 14.29,
+        "neutral_pct": 35.71,
+        "sentiment_trend": "positive"
+      },
+      {
+        "keyword": "blockers try",
+        "volume": 14,
+        "positive_pct": 0.0,
+        "negative_pct": 92.86,
+        "neutral_pct": 7.14,
+        "sentiment_trend": "negative"
+      },
+      {
+        "keyword": "connection disable",
+        "volume": 14,
+        "positive_pct": 0.0,
+        "negative_pct": 100.0,
+        "neutral_pct": 0.0,
+        "sentiment_trend": "negative"
+      },
+      {
+        "keyword": "ai",
+        "volume": 13,
+        "positive_pct": 30.77,
+        "negative_pct": 7.69,
+        "neutral_pct": 61.54,
+        "sentiment_trend": "positive"
+      },
+      {
+        "keyword": "binance founder",
+        "volume": 13,
+        "positive_pct": 7.69,
+        "negative_pct": 7.69,
+        "neutral_pct": 84.62,
+        "sentiment_trend": "neutral"
+      },
+      {
+        "keyword": "kings protests",
+        "volume": 13,
+        "positive_pct": 0.0,
+        "negative_pct": 38.46,
+        "neutral_pct": 61.54,
+        "sentiment_trend": "negative"
+      },
+      {
+        "keyword": "24 2025",
+        "volume": 13,
+        "positive_pct": 7.69,
+        "negative_pct": 0.0,
+        "neutral_pct": 92.31,
+        "sentiment_trend": "positive"
+      },
+      {
+        "keyword": "climate change",
+        "volume": 12,
+        "positive_pct": 16.67,
+        "negative_pct": 25.0,
+        "neutral_pct": 58.33,
+        "sentiment_trend": "negative"
+      },
+      {
+        "keyword": "23 2025",
+        "volume": 12,
+        "positive_pct": 25.0,
+        "negative_pct": 8.33,
+        "neutral_pct": 66.67,
+        "sentiment_trend": "positive"
+      },
+      {
+        "keyword": "false",
+        "volume": 12,
+        "positive_pct": 0.0,
+        "negative_pct": 50.0,
+        "neutral_pct": 50.0,
+        "sentiment_trend": "negative"
+      },
+      {
+        "keyword": "sale window",
+        "volume": 12,
+        "positive_pct": 0.0,
+        "negative_pct": 25.0,
+        "neutral_pct": 75.0,
+        "sentiment_trend": "negative"
+      },
+      {
+        "keyword": "wall street",
+        "volume": 11,
+        "positive_pct": 9.09,
+        "negative_pct": 18.18,
+        "neutral_pct": 72.73,
+        "sentiment_trend": "negative"
+      },
+      {
+        "keyword": "settings check",
+        "volume": 11,
+        "positive_pct": 0.0,
+        "negative_pct": 100.0,
+        "neutral_pct": 0.0,
+        "sentiment_trend": "negative"
+      },
+      {
+        "keyword": "required site",
+        "volume": 11,
+        "positive_pct": 0.0,
+        "negative_pct": 100.0,
+        "neutral_pct": 0.0,
+        "sentiment_trend": "negative"
+      },
+      {
+        "keyword": "newswire",
+        "volume": 11,
+        "positive_pct": 36.36,
+        "negative_pct": 0.0,
+        "neutral_pct": 63.64,
+        "sentiment_trend": "positive"
+      },
+      {
+        "keyword": "android xr",
+        "volume": 11,
+        "positive_pct": 100.0,
+        "negative_pct": 0.0,
+        "neutral_pct": 0.0,
+        "sentiment_trend": "positive"
+      },
+      {
+        "keyword": "federal reserve",
+        "volume": 11,
+        "positive_pct": 18.18,
+        "negative_pct": 18.18,
+        "neutral_pct": 63.64,
+        "sentiment_trend": "neutral"
+      },
+      {
+        "keyword": "champions league",
+        "volume": 11,
+        "positive_pct": 9.09,
+        "negative_pct": 0.0,
+        "neutral_pct": 90.91,
+        "sentiment_trend": "positive"
+      },
+      {
+        "keyword": "web services",
+        "volume": 10,
+        "positive_pct": 0.0,
+        "negative_pct": 60.0,
+        "neutral_pct": 40.0,
+        "sentiment_trend": "negative"
+      },
+      {
+        "keyword": "trump pardons",
+        "volume": 10,
+        "positive_pct": 10.0,
+        "negative_pct": 0.0,
+        "neutral_pct": 90.0,
+        "sentiment_trend": "positive"
+      }
+    ]
+  },
+  "category_stats": {
+    "top_categories": [
+      {
+        "category": "Culture",
+        "volume": 4140,
+        "avg_sentiment_confidence": 0.0
+      },
+      {
+        "category": "Technology",
+        "volume": 3525,
+        "avg_sentiment_confidence": 0.0
+      },
+      {
+        "category": "Law",
+        "volume": 2882,
+        "avg_sentiment_confidence": 0.0
+      },
+      {
+        "category": "Business",
+        "volume": 2544,
+        "avg_sentiment_confidence": 0.0
+      },
+      {
+        "category": "Economy",
+        "volume": 2460,
+        "avg_sentiment_confidence": 0.0
+      },
+      {
+        "category": "Lifestyle",
+        "volume": 2226,
+        "avg_sentiment_confidence": 0.0
+      },
+      {
+        "category": "Environment",
+        "volume": 1877,
+        "avg_sentiment_confidence": 0.0
+      },
+      {
+        "category": "Adventure",
+        "volume": 1860,
+        "avg_sentiment_confidence": 0.0
+      },
+      {
+        "category": "Travel",
+        "volume": 1762,
+        "avg_sentiment_confidence": 0.0
+      },
+      {
+        "category": "Climate",
+        "volume": 1719,
+        "avg_sentiment_confidence": 0.0
+      },
+      {
+        "category": "Health",
+        "volume": 1550,
+        "avg_sentiment_confidence": 0.0
+      },
+      {
+        "category": "Social Media",
+        "volume": 1531,
+        "avg_sentiment_confidence": 0.0
+      },
+      {
+        "category": "Entertainment",
+        "volume": 1484,
+        "avg_sentiment_confidence": 0.0
+      },
+      {
+        "category": "Science",
+        "volume": 1333,
+        "avg_sentiment_confidence": 0.0
+      },
+      {
+        "category": "Finance",
+        "volume": 1318,
+        "avg_sentiment_confidence": 0.0
+      },
+      {
+        "category": "Energy",
+        "volume": 1010,
+        "avg_sentiment_confidence": 0.0
+      },
+      {
+        "category": "Luxury",
+        "volume": 1010,
+        "avg_sentiment_confidence": 0.0
+      },
+      {
+        "category": "Politics",
+        "volume": 1002,
+        "avg_sentiment_confidence": 0.0
+      },
+      {
+        "category": "World News",
+        "volume": 1000,
+        "avg_sentiment_confidence": 0.0
+      },
+      {
+        "category": "Artificial Intelligence",
+        "volume": 949,
+        "avg_sentiment_confidence": 0.0
+      }
+    ]
+  },
+  "source_stats": {
+    "top_sources": [
+      {
+        "source": "Forbes",
+        "volume": 639
+      },
+      {
+        "source": "BBC News",
+        "volume": 264
+      },
+      {
+        "source": "Yahoo Entertainment",
+        "volume": 203
+      },
+      {
+        "source": "Business Insider",
+        "volume": 202
+      },
+      {
+        "source": "The Times of India",
+        "volume": 185
+      },
+      {
+        "source": "Al Jazeera English",
+        "volume": 183
+      },
+      {
+        "source": "GlobeNewswire",
+        "volume": 173
+      },
+      {
+        "source": "Biztoc.com",
+        "volume": 166
+      },
+      {
+        "source": "Gizmodo.com",
+        "volume": 118
+      },
+      {
+        "source": "Geeky Gadgets",
+        "volume": 106
+      },
+      {
+        "source": "The Verge",
+        "volume": 104
+      },
+      {
+        "source": "TechRadar",
+        "volume": 100
+      },
+      {
+        "source": "The Indian Express",
+        "volume": 99
+      },
+      {
+        "source": "CNET",
+        "volume": 95
+      },
+      {
+        "source": "Nature.com",
+        "volume": 95
+      }
+    ]
+  },
+  "trending_topics": {
+    "trending_topics": [
+      {
+        "topic": "bollywood",
+        "volume": 55
+      },
+      {
+        "topic": "neural networks",
+        "volume": 54
+      },
+      {
+        "topic": "cricket",
+        "volume": 51
+      },
+      {
+        "topic": "elections",
+        "volume": 51
+      },
+      {
+        "topic": "deep learning",
+        "volume": 46
+      },
+      {
+        "topic": "UN news",
+        "volume": 43
+      },
+      {
+        "topic": "hollywood",
+        "volume": 43
+      },
+      {
+        "topic": "international relations",
+        "volume": 42
+      },
+      {
+        "topic": "blockchain technology",
+        "volume": 40
+      },
+      {
+        "topic": "movies",
+        "volume": 40
+      }
+    ]
+  },
+  "daily_trends": {
+    "daily_trends": [
+      {
+        "date": "2025-10-19",
+        "volume": 377,
+        "positive_pct": 28.38,
+        "negative_pct": 16.45,
+        "neutral_pct": 51.99,
+        "unknown_pct": 3.18
+      },
+      {
+        "date": "2025-10-20",
+        "volume": 789,
+        "positive_pct": 26.74,
+        "negative_pct": 15.59,
+        "neutral_pct": 50.06,
+        "unknown_pct": 7.6
+      },
+      {
+        "date": "2025-10-21",
+        "volume": 995,
+        "positive_pct": 24.42,
+        "negative_pct": 14.47,
+        "neutral_pct": 46.03,
+        "unknown_pct": 15.08
+      },
+      {
+        "date": "2025-10-22",
+        "volume": 1097,
+        "positive_pct": 22.52,
+        "negative_pct": 14.31,
+        "neutral_pct": 48.95,
+        "unknown_pct": 14.22
+      },
+      {
+        "date": "2025-10-23",
+        "volume": 1104,
+        "positive_pct": 24.18,
+        "negative_pct": 14.22,
+        "neutral_pct": 45.92,
+        "unknown_pct": 15.67
+      },
+      {
+        "date": "2025-10-24",
+        "volume": 968,
+        "positive_pct": 22.93,
+        "negative_pct": 14.26,
+        "neutral_pct": 47.62,
+        "unknown_pct": 15.19
+      },
+      {
+        "date": "2025-10-25",
+        "volume": 475,
+        "positive_pct": 20.21,
+        "negative_pct": 8.0,
+        "neutral_pct": 29.89,
+        "unknown_pct": 41.89
+      },
+      {
+        "date": "2025-10-26",
+        "volume": 425,
+        "positive_pct": 0.0,
+        "negative_pct": 0.0,
+        "neutral_pct": 0.0,
+        "unknown_pct": 100.0
+      },
+      {
+        "date": "2025-10-27",
+        "volume": 862,
+        "positive_pct": 0.0,
+        "negative_pct": 0.0,
+        "neutral_pct": 0.0,
+        "unknown_pct": 100.0
+      },
+      {
+        "date": "2025-10-28",
+        "volume": 539,
+        "positive_pct": 0.0,
+        "negative_pct": 0.0,
+        "neutral_pct": 0.0,
+        "unknown_pct": 100.0
+      }
+    ]
+  },
+  "last_updated": "2025-10-31T23:12:06.743354"
+}
