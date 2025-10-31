@@ -7,6 +7,9 @@ const cors = require('cors');
 const path = require('path');
 const recommendRoutes = require('./routes/recommendRoutes'); 
 const statsRoutes = require('./routes/StatRoute'); 
+const cron = require('node-cron');
+const {emailService} = require('./services/emailService');
+const {newsService} = require('./services/newsService');
 
 dotenv.config();
 connectDB();
@@ -69,6 +72,29 @@ app.use((err, req, res, next) => {
   });
 });
 
+
+async function sendDailyNewsletter() {
+  const articles = await getTopHeadlines();
+
+  if (!articles.length) return console.log("No news to send!");
+
+  const html = `
+    <h2>Today's Headlines from NewsPulse</h2>
+    <ul>
+      ${articles
+        .map(
+          (a) =>
+            `<li><a href="${a.url}" target="_blank">${a.title}</a><br/><small>${a.source.name}</small></li>`
+        )
+        .join("")}
+    </ul>
+    <p>Have a great day!</p>`;
+
+  await sendEmail("Daily Newsletter", html);
+}
+cron.schedule("0 8 * * *", () => {
+  sendDailyNewsletter();
+});
 const PORT = process.env.PORT || 5000;
 
 const server = app.listen(PORT, () => {
