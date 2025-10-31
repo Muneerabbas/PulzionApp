@@ -6,7 +6,7 @@ const newsRoutes = require('./routes/newsRoutes');
 const cors = require('cors');
 const path = require('path');
 const recommendRoutes = require('./routes/recommendRoutes'); 
-const statsRoutes = require('./routes/statsRoutes'); 
+const statsRoutes = require('./routes/StatRoute'); 
 
 dotenv.config();
 connectDB();
