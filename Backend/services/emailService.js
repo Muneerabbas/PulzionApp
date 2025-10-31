@@ -1,20 +1,23 @@
-import nodemailer from "nodemailer";
+module.exports = async function sendEmail(subject, html, toEmail) {
+  try {
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
 
-export async function sendEmail(subject, html) {
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: "muneer.abbas9595@gmail.com",
-      pass: "passwordNotWorking",
-    },
-  });
+    await transporter.sendMail({
+      from: `"NewsPulse" <${process.env.EMAIL_USER}>`,
+      to: toEmail,
+      subject,
+      html,
+    });
 
-  await transporter.sendMail({
-    from: `"Daily News" <muneer.abbas9595@gmail.com>`,
-    to: "muneerisnoob@gmail.com",
-    subject,
-    html,
-  });
-
-  console.log("Email sent successfully!");
+    console.log(`📧 Email sent to ${toEmail}`);
+  } catch (err) {
+    console.error("❌ Email send error:", err.message);
+    throw err; // <-- rethrow so controller can handle it
+  }
 }

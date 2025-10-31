@@ -2,12 +2,35 @@ import axios from "axios";
 
 export async function getTopHeadlines() {
   try {
-    const res = await axios.get(
-      `https://newsapi.org/v2/top-headlines?country=us&pageSize=5&apiKey=b97d37f3f4e548fe91a24beaaac7571a`
-    );
+    const res = await axios.get("https://newsapi.org/v2/top-headlines", {
+      params: {
+        country: "us",
+        pageSize: 5,
+        apiKey: process.env.NEWS_API_KEY,
+      },
+    });
+
     return res.data.articles || [];
   } catch (err) {
-    console.error("Error: ", err.message);
+    console.error("Error fetching headlines:", err.message);
+    return [];
+  }
+}
+
+export async function searchNews(query) {
+  try {
+    const res = await axios.get("https://newsapi.org/v2/everything", {
+      params: {
+        q: query,
+        language: "en",
+        sortBy: "publishedAt",
+        apiKey: process.env.NEWS_API_KEY,
+      },
+    });
+
+    return res.data.articles || [];
+  } catch (err) {
+    console.error("Error searching news:", err.message);
     return [];
   }
 }

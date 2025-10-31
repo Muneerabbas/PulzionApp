@@ -58,12 +58,17 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    isSubscribed: {               // <-- New field
+      type: Boolean,
+      default: false,             // false = not subscribed, true = subscribed
+    },
   },
   {
     timestamps: true,
   }
 );
 
+// Password hashing middleware
 userSchema.pre('save', async function (next) {
   if (!this.isModified('passwordHash')) {
     return next();
@@ -78,6 +83,7 @@ userSchema.pre('save', async function (next) {
   }
 });
 
+// Compare passwords
 userSchema.methods.matchPassword = async function (enteredPassword) {
   try {
     return await bcrypt.compare(enteredPassword, this.passwordHash);
@@ -86,6 +92,7 @@ userSchema.methods.matchPassword = async function (enteredPassword) {
   }
 };
 
+// Public profile
 userSchema.methods.getPublicProfile = function () {
   return {
     _id: this._id,
@@ -93,23 +100,20 @@ userSchema.methods.getPublicProfile = function () {
     email: this.email,
     photo: this.photo,
     preferences: this.preferences,
+    isSubscribed: this.isSubscribed, // include subscription status
     createdAt: this.createdAt,
     lastLogin: this.lastLogin,
   };
 };
 
+// Find user by credentials
 userSchema.statics.findByCredentials = async function (email, password) {
   const user = await this.findOne({ email, isActive: true }).select('+passwordHash');
   
-  if (!user) {
-    throw new Error('Invalid credentials');
-  }
+  if (!user) throw new Error('Invalid credentials');
 
   const isMatch = await user.matchPassword(password);
-  
-  if (!isMatch) {
-    throw new Error('Invalid credentials');
-  }
+  if (!isMatch) throw new Error('Invalid credentials');
 
   return user;
 };
