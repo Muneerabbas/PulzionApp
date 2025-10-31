@@ -1,22 +1,23 @@
+#!/usr/bin/env python3
 """
-MongoDB to Qdrant data migration script.
-Connects to MongoDB, processes articles, and uploads them to Qdrant Cloud.
+MongoDB → Qdrant Full-Field Migration
+Exports ALL fields + stores embedding as vector in Qdrant
+No MongoDB needed after migration
 """
-
 import os
+import time
 import logging
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 from pymongo import MongoClient
 from qdrant_client import QdrantClient
 from qdrant_client.http import models
 from tqdm import tqdm
 from dotenv import load_dotenv
-import time
+from datetime import datetime
 
-# Load environment variables
+# --------------------- Load Config ---------------------
 load_dotenv()
 
-# Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
@@ -24,226 +25,217 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Configuration
+# MongoDB
 MONGODB_URI = os.getenv("MONGODB_URI", "mongodb://localhost:27017/")
 DATABASE_NAME = "news_pipeline"
 COLLECTION_NAME = "articles"
 
-# Qdrant Configuration
+# Qdrant
 QDRANT_URL = os.getenv("QDRANT_URL")
 QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
-COLLECTION_NAME_QDRANT = "articles_collection"
-BATCH_SIZE = 100 
+QDRANT_COLLECTION = "articles_collection"
 
+# Settings
+BATCH_SIZE = 100
+RETRY_DELAY = 3  # seconds
+
+
+# --------------------- Clients ---------------------
 def get_mongodb_client() -> MongoClient:
-    try:
-        client = MongoClient(MONGODB_URI)
-        client.admin.command('ping')
-        logger.info("✅ Connected to MongoDB")
-        return client
-    except Exception as e:
-        logger.error(f"❌ Failed to connect to MongoDB: {e}")
-        raise
+    client = MongoClient(MONGODB_URI, serverSelectionTimeoutMS=5000)
+    client.admin.command('ping')
+    logger.info("Connected to MongoDB")
+    return client
+
 
 def get_qdrant_client() -> QdrantClient:
-    """Create and return a Qdrant client."""
     if not QDRANT_URL or not QDRANT_API_KEY:
-        raise ValueError("QDRANT_URL and QDRANT_API_KEY must be set in .env file")
-    
-    try:
-        client = QdrantClient(
-            url=QDRANT_URL,
-            api_key=QDRANT_API_KEY,
-            timeout=60  # Increased timeout for cloud operations
-        )
-        logger.info("✅ Connected to Qdrant Cloud")
-        return client
-    except Exception as e:
-        logger.error(f"❌ Failed to connect to Qdrant: {e}")
-        raise
+        raise ValueError("QDRANT_URL and QDRANT_API_KEY must be set in .env")
+    client = QdrantClient(
+        url=QDRANT_URL,
+        api_key=QDRANT_API_KEY,
+        timeout=60
+    )
+    logger.info("Connected to Qdrant Cloud")
+    return client
 
-def process_article(article: Dict[str, Any]) -> Dict[str, Any]:
-    """Process a single article document from MongoDB."""
-    # Take first 5 categories if they exist
-    categories = article.get('categories', [])[:5]
-    
-    # Prepare the payload with all required fields
-    payload = {
-        'author': article.get('author'),
-        'content': article.get('content'),
-        'description': article.get('description'),
-        'published_at': article.get('published_at'),
-        'search_topic': article.get('search_topic'),
-        'source': article.get('source', {}).get('name') if isinstance(article.get('source'), dict) else article.get('source'),
-        'title': article.get('title'),
-        'url': article.get('url'),
-        'image_url':article.get('urlToImage'),
-        'articleId':article.get('_id'),
-        'url_hash': article.get('url_hash'),
-        'categories': categories,
-        'keywords': article.get('keywords', []),
-        'sentiment': article.get('sentiment'),
-        'sentiment_scores': article.get('sentiment_scores')
-    }
-    
-    # Remove None values
-    payload = {k: v for k, v in payload.items() if v is not None}
-    
-    return {
-        'id': str(article['_id']),
-        'vector': article.get('embedding'),
-        'payload': payload
-    }
 
-def process_batch(articles: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """Process a batch of articles."""
-    processed = []
-    for article in articles:
-        try:
-            processed_article = process_article(article)
-            if processed_article['vector']:  # Only include articles with embeddings
-                processed.append(processed_article)
-        except Exception as e:
-            logger.warning(f"Skipping article due to error: {e}")
-    return processed
-
-def create_qdrant_collection(client: QdrantClient, vector_size: int = 768) -> None:
-    """Create a Qdrant collection with the specified vector size."""
-    try:
-        # Delete collection if it exists
-        client.delete_collection(collection_name=COLLECTION_NAME_QDRANT)
-        logger.info(f"🗑️  Deleted existing collection: {COLLECTION_NAME_QDRANT}")
-    except Exception as e:
-        logger.info(f"ℹ️  No existing collection to delete: {e}")
-    
-    try:
-        client.create_collection(
-            collection_name=COLLECTION_NAME_QDRANT,
-            vectors_config={
-                "": models.VectorParams(
-                    size=vector_size,
-                    distance=models.Distance.COSINE
-                )
-            }
-        )
-        logger.info(f"✅ Created Qdrant collection: {COLLECTION_NAME_QDRANT}")
-    except Exception as e:
-        logger.error(f"❌ Failed to create collection: {e}")
-        raise
-
-def upload_to_qdrant(qdrant_client: QdrantClient, batch: List[Dict[str, Any]]) -> None:
-    """Upload a batch of articles to Qdrant."""
-    if not batch:
-        return
-    
-    try:
-        points = []
-        for item in batch:
-            points.append(
-                models.PointStruct(
-                    id=item['id'],
-                    vector=item['vector'],
-                    payload=item['payload']
-                )
-            )
-        
-        qdrant_client.upsert(
-            collection_name=COLLECTION_NAME_QDRANT,
-            points=points,
-            wait=True
-        )
-        logger.info(f"🚀 Uploaded {len(batch)} articles to Qdrant")
-    except Exception as e:
-        logger.error(f"❌ Failed to upload batch to Qdrant: {e}")
-        raise
-
-def get_embedding_dimension(mongo_client: MongoClient) -> int:
-    """Get the embedding dimension from the first document with an embedding."""
+# --------------------- Embedding Dimension ---------------------
+def detect_embedding_dim(mongo_client: MongoClient) -> int:
     db = mongo_client[DATABASE_NAME]
-    collection = db[COLLECTION_NAME]
-    
-    # Find a document with an embedding field
-    doc = collection.find_one({"embedding": {"$exists": True, "$ne": None}})
-    if not doc or 'embedding' not in doc:
-        raise ValueError("No documents with embeddings found in the collection")
-    
-    return len(doc['embedding'])
+    coll = db[COLLECTION_NAME]
+    sample = coll.find_one({"embedding": {"$exists": True, "$ne": None}})
+    if not sample or 'embedding' not in sample:
+        raise ValueError("No document with 'embedding' found!")
+    dim = len(sample['embedding'])
+    logger.info(f"Detected embedding dimension: {dim}")
+    return dim
 
+
+# --------------------- Full Payload Builder ---------------------
+def build_full_payload(article: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Export ALL fields from MongoDB.
+    - Remove `embedding` (used as vector)
+    - Keep `_id` as string in payload for debugging
+    """
+    payload = {}
+    for key, value in article.items():
+        if key == "embedding":
+            continue
+        # Convert datetime to ISO string
+        if isinstance(value, datetime):
+            payload[key] = value.isoformat()
+        else:
+            payload[key] = value
+    # Explicitly add _id as string
+    payload["_id"] = str(article["_id"])
+    return payload
+
+
+# --------------------- Process Article ---------------------
+def process_article(article: Dict[str, Any]) -> Dict[str, Any]:
+    if not article.get("embedding"):
+        return None  # Skip if no embedding
+    return {
+        "id": str(article["_id"]),
+        "vector": article["embedding"],  # ← STORE VECTOR IN QDRANT
+        "payload": build_full_payload(article)
+    }
+
+
+# --------------------- Qdrant Collection Setup ---------------------
+def ensure_qdrant_collection(qdrant_client: QdrantClient, vector_size: int):
+    try:
+        qdrant_client.delete_collection(collection_name=QDRANT_COLLECTION)
+        logger.info(f"Deleted existing collection: {QDRANT_COLLECTION}")
+    except Exception:
+        logger.info("No existing collection to delete")
+
+    # Step 1: Create collection
+    qdrant_client.create_collection(
+        collection_name=QDRANT_COLLECTION,
+        vectors_config=models.VectorParams(
+            size=vector_size,
+            distance=models.Distance.COSINE
+        ),
+    )
+    logger.info(f"Created Qdrant collection: {QDRANT_COLLECTION} (dim={vector_size})")
+
+    # Step 2: Add payload indexes
+    indexes = [
+        ("published_at", models.PayloadSchemaType.DATETIME),
+        ("source", models.PayloadSchemaType.KEYWORD),
+        ("categories", models.PayloadSchemaType.KEYWORD),
+        ("sentiment", models.PayloadSchemaType.KEYWORD),
+        ("keywords", models.PayloadSchemaType.KEYWORD),
+        ("_id", models.PayloadSchemaType.KEYWORD),
+    ]
+
+    for field_name, schema_type in indexes:
+        try:
+            qdrant_client.create_payload_index(
+                collection_name=QDRANT_COLLECTION,
+                field_name=field_name,
+                field_schema=schema_type
+            )
+            logger.info(f"Indexed payload field: {field_name} → {schema_type}")
+        except Exception as e:
+            logger.warning(f"Failed to index {field_name}: {e}")
+
+
+# --------------------- Upload Batch with Retry ---------------------
+def upload_batch_with_retry(qdrant_client: QdrantClient, batch: List[Dict[str, Any]]):
+    points = [
+        models.PointStruct(
+            id=item["id"],
+            vector=item["vector"],
+            payload=item["payload"]
+        )
+        for item in batch
+    ]
+    for attempt in range(3):
+        try:
+            qdrant_client.upsert(
+                collection_name=QDRANT_COLLECTION,
+                points=points,
+                wait=True
+            )
+            logger.debug(f"Uploaded batch of {len(batch)} points")
+            return
+        except Exception as e:
+            logger.warning(f"Upload failed (attempt {attempt+1}): {e}")
+            time.sleep(RETRY_DELAY * (2 ** attempt))
+    logger.error("Final upload failed after retries")
+    raise
+
+
+# --------------------- Main Migration ---------------------
 def main():
     start_time = time.time()
-    
+    mongo_client = None
+    qdrant_client = None
     try:
-        # Initialize clients
+        # Connect
         mongo_client = get_mongodb_client()
         qdrant_client = get_qdrant_client()
-        
-        # Get the embedding dimension from an example document
-        try:
-            embedding_dim = get_embedding_dimension(mongo_client)
-            logger.info(f"🔍 Detected embedding dimension: {embedding_dim}")
-        except Exception as e:
-            logger.error(f"❌ Error getting embedding dimension: {e}")
-            embedding_dim = 768  # Default to 768 if can't determine
-            logger.info(f"ℹ️  Using default embedding dimension: {embedding_dim}")
-        
-        # Create Qdrant collection
-        create_qdrant_collection(qdrant_client, vector_size=embedding_dim)
-        
-        # Get MongoDB collection
+
+        # Detect embedding size
+        embedding_dim = detect_embedding_dim(mongo_client)
+
+        # Setup Qdrant collection with indexes
+        ensure_qdrant_collection(qdrant_client, embedding_dim)
+
+        # Count total with embeddings
         db = mongo_client[DATABASE_NAME]
-        collection = db[COLLECTION_NAME]
-        
-        # Get total count for progress tracking
-        total_docs = collection.count_documents({"embedding": {"$exists": True, "$ne": None}})
-        logger.info(f"📊 Found {total_docs} articles with embeddings")
-        
-        if total_docs == 0:
-            logger.warning("⚠️  No documents with embeddings found in the collection")
+        coll = db[COLLECTION_NAME]
+        total = coll.count_documents({"embedding": {"$exists": True, "$ne": None}})
+        logger.info(f"Found {total:,} articles with embeddings")
+        if total == 0:
+            logger.warning("No articles to migrate.")
             return
-        
-        # Process articles in batches
-        processed_count = 0
-        batch = []
-        
-        # Use a cursor to stream documents
-        cursor = collection.find(
+
+        # Stream + process
+        cursor = coll.find(
             {"embedding": {"$exists": True, "$ne": None}},
-            batch_size=BATCH_SIZE
-        )
-        
-        with tqdm(total=total_docs, desc="Processing articles") as pbar:
-            for article in cursor:
-                processed_article = process_article(article)
-                if processed_article['vector']:
-                    batch.append(processed_article)
-                
-                # Process batch when it reaches the batch size
+            no_cursor_timeout=True
+        ).batch_size(BATCH_SIZE)
+
+        batch = []
+        processed = 0
+        with tqdm(total=total, desc="Migrating", unit="doc") as pbar:
+            for doc in cursor:
+                item = process_article(doc)
+                if item:
+                    batch.append(item)
                 if len(batch) >= BATCH_SIZE:
-                    upload_to_qdrant(qdrant_client, batch)
-                    processed_count += len(batch)
+                    upload_batch_with_retry(qdrant_client, batch)
+                    processed += len(batch)
                     pbar.update(len(batch))
-                    batch = []
-            
-            # Process any remaining articles in the last batch
+                    batch.clear()
+
+            # Final batch
             if batch:
-                upload_to_qdrant(qdrant_client, batch)
-                processed_count += len(batch)
+                upload_batch_with_retry(qdrant_client, batch)
+                processed += len(batch)
                 pbar.update(len(batch))
-        
-        collection_info = qdrant_client.get_collection(COLLECTION_NAME_QDRANT)
-        logger.info(f"✅ Migration completed successfully!")
-        logger.info(f"📊 Total articles processed: {processed_count}")
-        logger.info(f"🔍 Qdrant collection info: {collection_info}")
-        
+
+        # Final stats
+        collection_info = qdrant_client.get_collection(QDRANT_COLLECTION)
+        logger.info("Migration completed!")
+        logger.info(f" Processed: {processed:,}")
+        logger.info(f" Qdrant points: {collection_info.points_count:,}")
+        logger.info(f" Time taken: {time.time() - start_time:.2f}s")
+
     except Exception as e:
-        logger.error(f"❌ Error during migration: {e}", exc_info=True)
+        logger.error(f"Migration failed: {e}", exc_info=True)
     finally:
-        if 'mongo_client' in locals():
+        if mongo_client:
             mongo_client.close()
-        if 'qdrant_client' in locals():
+        if qdrant_client:
             qdrant_client.close()
-        
-        logger.info(f"⏱️  Total execution time: {time.time() - start_time:.2f} seconds")
+        logger.info("Clients closed.")
+
 
 if __name__ == "__main__":
     main()

@@ -1,36 +1,95 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, Image, StyleSheet, Dimensions, Animated, ActivityIndicator, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  Dimensions,
+  Animated,
+  ActivityIndicator,
+  TouchableOpacity,
+  ScrollView,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Swiper from 'react-native-deck-swiper';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../src/context/ThemeContext';
 import { getNews } from '../../src/api/newsApi';
 import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+dayjs.extend(relativeTime);
 
 const { width, height } = Dimensions.get('window');
 
-const Card = ({ item, colors }) => (
-  <View style={[styles.card, { backgroundColor: colors.border }]}>
-    <Image source={{ uri: item?.urlToImage }} style={styles.image} resizeMode="cover" />
+// ------------------ CARD COMPONENT ------------------
+const Card = ({ item, colors }) => {
+  const sentimentScore = item?.description?.length % 3; // 0=negative,1=neutral,2=positive
+  const sentimentColor =
+    sentimentScore === 2 ? '#1fc16b' : sentimentScore === 1 ? '#fbbc04' : '#ff4d4f';
 
-    <View style={styles.authorSection}>
-      <Text style={[styles.author, { color: colors.secondary }]}>{item?.author}</Text>
-      <Text style={[styles.timeAgo, { color: colors.secondary }]}>
-        {dayjs(item?.publishedAt).format('DD MMM YYYY')}
+  const topics = item?.title?.split(' ').slice(0, 5) || ['News', 'Update'];
+
+  return (
+    <View style={[styles.card, { backgroundColor: colors.border }]}>
+      <View style={styles.imageContainer}>
+        <Image source={{ uri: item?.urlToImage }} style={styles.image} resizeMode="cover" />
+        <LinearGradient
+          colors={['transparent', 'rgba(0,0,0,0.6)']}
+          style={StyleSheet.absoluteFill}
+        />
+      </View>
+
+      <View style={styles.authorSection}>
+        <Text style={[styles.author, { color: colors.secondary }]}>{item?.author || 'Anonymous'}</Text>
+        <Text style={[styles.timeAgo, { color: colors.secondary }]}>
+          {dayjs(item?.publishedAt).fromNow()}
+        </Text>
+      </View>
+
+      <Text numberOfLines={5} style={[styles.title, { color: colors.secondary }]}>
+        {item?.description || 'No Description'}
       </Text>
+
+      {/* Sentiment Bar */}
+      <View style={styles.sentimentContainer}>
+        <LinearGradient
+          colors={['#ff4d4f', '#fbbc04', '#1fc16b']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.sentimentBar}
+        />
+        <View
+          style={[
+            styles.sentimentIndicator,
+            { left: `${(sentimentScore / 2) * 100}%`, backgroundColor: sentimentColor },
+          ]}
+        />
+      </View>
+
+      {/* Capsule Topics */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.topicsContainer}
+        contentContainerStyle={{ paddingHorizontal: 8 }}
+      >
+        {topics.map((topic, index) => (
+          <LinearGradient
+            key={index}
+            colors={['#4facfe', '#00f2fe']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.topicCapsule}
+          >
+            <Text style={styles.topicText}>{topic}</Text>
+          </LinearGradient>
+        ))}
+      </ScrollView>
     </View>
+  );
+};
 
-    <Text numberOfLines={5} style={[styles.title, { color: colors.secondary }]}>
-      {item?.description}
-    </Text>
-
-    <Text style={[styles.readTime, { color: colors.text }]}>
-      Source:{' '}
-      <Text style={[styles.readTimeBold, { color: colors.text }]}>{item?.source?.name}</Text>
-    </Text>
-  </View>
-);
-
+// ------------------ TRENDING COMPONENT ------------------
 const Trending = () => {
   const { colors } = useTheme();
   const [news, setNews] = useState([]);
@@ -38,7 +97,7 @@ const Trending = () => {
   const bgAnim = useState(new Animated.Value(0))[0];
   const [loading, setLoading] = useState(true);
   const swiperRef = useRef(null);
-
+  const [swipedAll, setSwipedAll] = useState(false);
 
   const fetchNews = useCallback(async () => {
     try {
@@ -48,8 +107,7 @@ const Trending = () => {
       setSwipedAll(false);
     } catch (error) {
       console.error(error);
-    }
-    finally {
+    } finally {
       setLoading(false);
     }
   }, []);
@@ -58,7 +116,7 @@ const Trending = () => {
     fetchNews();
   }, [fetchNews]);
 
-  // Animate swipe direction
+  // Animate swipe gradient overlay
   useEffect(() => {
     Animated.timing(bgAnim, {
       toValue: swipeDir === 'right' ? 1 : swipeDir === 'left' ? -1 : 0,
@@ -69,13 +127,12 @@ const Trending = () => {
 
   const opacity = bgAnim.interpolate({
     inputRange: [-1, 0, 1],
-    outputRange: [0.8, 0, 0.8],
+    outputRange: [0.6, 0, 0.6],
   });
-  const [swipedAll, setSwipedAll] = useState(false);
 
   if (loading) {
     return (
-      <View style={[styles.endContainer, { backgroundColor: colors.primary }]}> 
+      <View style={[styles.endContainer, { backgroundColor: colors.primary }]}>
         <ActivityIndicator size="large" color={colors.secondary} />
         <Text style={[styles.endText, { color: colors.secondary, marginTop: 12 }]}>Loading...</Text>
       </View>
@@ -84,12 +141,11 @@ const Trending = () => {
 
   if (!loading && (swipedAll || news.length === 0)) {
     return (
-      <View style={[styles.endContainer,{backgroundColor:colors.primary}]}> 
-        <Text style={[styles.endText,{color:colors.secondary}]}>🎉 That's all for today!</Text>
+      <View style={[styles.endContainer, { backgroundColor: colors.primary }]}>
+        <Text style={[styles.endText, { color: colors.secondary }]}>🎉 That's all for today!</Text>
       </View>
     );
   }
-
 
   const gradientColors =
     swipeDir === 'right'
@@ -99,15 +155,13 @@ const Trending = () => {
       : ['transparent', 'transparent'];
 
   return (
-    <View 
-  
-    style={[styles.container, { backgroundColor: colors.primary }]}>
-      {/* Animated Gradient Layer */}
+    <View style={[styles.container, { backgroundColor: colors.primary }]}>
+      {/* Swipe Gradient Overlay */}
       <Animated.View style={[StyleSheet.absoluteFill, { opacity }]}>
         <LinearGradient
           colors={gradientColors}
-          start={swipeDir === 'right' ? { x: 0, y: 0.5 } : { x: 1, y: 0.5 }}
-          end={swipeDir === 'right' ? { x: 1, y: 0.5 } : { x: 0, y: 0.5 }}
+          start={{ x: 0, y: 0.5 }}
+          end={{ x: 1, y: 0.5 }}
           style={StyleSheet.absoluteFill}
         />
       </Animated.View>
@@ -117,22 +171,52 @@ const Trending = () => {
           <Swiper
             ref={swiperRef}
             cards={news}
-            renderCard={(card) => <Card item={card} colors={colors} />}
+            renderCard={(card, index) => (
+              <Animated.View
+                style={[
+                  { transform: [{ scale: 1 - index * 0.05 }, { translateY: index * 10 }] },
+                ]}
+              >
+                <Card item={card} colors={colors} />
+              </Animated.View>
+            )}
+            cardVerticalMargin={20}
+            cardHorizontalMargin={0}
             backgroundColor="transparent"
             stackSize={3}
-            stackSeparation={-15}
-            stackScale={10}
+            stackSeparation={-10}
+            stackScale={8}
             disableTopSwipe={false}
             disableBottomSwipe
+            animateOverlayLabelsOpacity
+            animateCardOpacity
+            overlayLabels={{
+              left: {
+                title: 'DISLIKE',
+                style: {
+                  label: { backgroundColor: 'red', color: 'white', fontSize: 24 },
+                },
+              },
+              right: {
+                title: 'LIKE',
+                style: {
+                  label: { backgroundColor: 'green', color: 'white', fontSize: 24 },
+                },
+              },
+            }}
             onSwiping={(x) => {
               if (x > 0) setSwipeDir('right');
               else if (x < 0) setSwipeDir('left');
               else setSwipeDir(null);
             }}
             onSwiped={() => setSwipeDir(null)}
-            onSwipedAll={() => { setSwipeDir(null); setSwipedAll(true); }}
+            onSwipedAll={() => {
+              setSwipeDir(null);
+              setSwipedAll(true);
+            }}
           />
 
+          {/* Swipe Controls */}
           <View style={styles.controlsContainer}>
             <TouchableOpacity
               onPress={() => swiperRef.current?.swipeLeft()}
@@ -164,6 +248,7 @@ const Trending = () => {
   );
 };
 
+// ------------------ STYLES ------------------
 const styles = StyleSheet.create({
   container: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   controlsContainer: {
@@ -181,44 +266,54 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: 'center',
   },
-  controlText: {
-    fontFamily: 'MonaSans-Bold',
-    fontSize: 14,
-  },
   card: {
-    borderRadius: 20,
-    padding: 5,
-    width: width * 0.85,
-    alignItems: 'center',
-    borderWidth: 5,
-    borderColor: 'transparent',
+    borderRadius: 25,
+    width: width * 0.9,
+    height: height * 0.75,
+    padding: 12,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
+    shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.25,
-    shadowRadius: 5,
-    elevation: 5,
+    shadowRadius: 8,
+    elevation: 10,
+    overflow: 'hidden',
+    position: 'relative',
+    alignSelf: 'center',
+    justifyContent: 'flex-end',
   },
-  image: {
+  imageContainer: { flex: 1, width: '100%', borderRadius: 25, overflow: 'hidden' },
+  image: { width: '100%', height: '100%' },
+  authorSection: { alignItems: 'center', marginVertical: 6 },
+  author: { fontSize: 16, fontFamily: 'MonaSans-Bold', textAlign: 'center' },
+  timeAgo: { fontSize: 12, fontFamily: 'MonaSans-Regular', textAlign: 'center' },
+  title: { fontSize: 16, fontFamily: 'MonaSans-Bold', textAlign: 'center', marginVertical: 8 },
+  sentimentContainer: {
     width: '100%',
-    height: height * 0.3,
-    borderRadius: 12,
-    marginBottom: 16,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#ccc',
+    overflow: 'hidden',
+    position: 'relative',
+    marginTop: 8,
   },
-  authorSection: { alignItems: 'center', marginBottom: 8 },
-  author: { fontSize: 16, fontFamily: 'MonaSans-Bold',textAlign:'center' },
-  timeAgo: { fontSize: 13, fontFamily: 'MonaSans-Regular',textAlign:'center' },
-  title: { fontSize: 14, fontFamily: 'MonaSans-Regular', textAlign: 'center', marginVertical: 8 },
-  readTime: { fontSize: 14, fontFamily: 'MonaSans-Regular' },
-  readTimeBold: { fontFamily: 'MonaSans-Bold', fontSize: 14 },
-   endContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+  sentimentBar: { width: '100%', height: '100%' },
+  sentimentIndicator: {
+    position: 'absolute',
+    top: 0,
+    width: 14,
+    height: '100%',
+    borderRadius: 6,
   },
-  endText: {
-    fontSize: 24,
-    fontFamily:'MonaSans-Bold',
+  topicsContainer: { marginTop: 12, maxHeight: 32 },
+  topicCapsule: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginRight: 8,
   },
+  topicText: { color: '#fff', fontWeight: 'bold', fontSize: 12 },
+  endContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  endText: { fontSize: 24, fontFamily: 'MonaSans-Bold', textAlign: 'center' },
 });
 
 export default Trending;
