@@ -8,8 +8,7 @@ const path = require('path');
 const recommendRoutes = require('./routes/recommendRoutes'); 
 const statsRoutes = require('./routes/StatRoute'); 
 const cron = require('node-cron');
-const {emailService} = require('./services/emailService');
-const {newsService} = require('./services/newsService');
+
 
 dotenv.config();
 connectDB();
@@ -17,69 +16,56 @@ connectDB();
 const app = express();
 
 const corsOptions = {
-  origin: process.env.CLIENT_URL || '*',
+  origin: process.env.CLIENT_URL || "*",
   credentials: true,
   optionsSuccessStatus: 200,
 };
 
 app.use(cors(corsOptions));
+app.use(express.json({ limit: "10mb" }))
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-app.get('/health', (req, res) => {
+app.get("/health", (req, res) => {
   res.status(200).json({
     success: true,
-    message: 'NewsPulse Backend API is running',
+    message: "NewsPulse Backend API is running",
     timestamp: new Date().toISOString(),
   });
 });
+const emailRoutes = require("./routes/emailRoutes.js");
 
-app.use('/api/auth', authRoutes);
-app.use('/api/news', newsRoutes);
-app.use('/api/recommend', recommendRoutes); 
-app.use('/api/stats', statsRoutes);
+// Routes
+app.use("/api/auth", authRoutes);
+app.use("/api/news", newsRoutes);
+app.use("/api/recommend", recommendRoutes);
+app.use("/api/stats", statsRoutes);
+app.use("/api/email", emailRoutes);
 
+// Not Found
 app.use((req, res) => {
   res.status(404).json({
     success: false,
-    message: 'Route not found',
+    message: "Route not found",
   });
 });
 
+// Error Handler
 app.use((err, req, res, next) => {
-  console.error('Error:', err);
-
-  if (err.code === 'LIMIT_FILE_SIZE') {
-    return res.status(400).json({
-      success: false,
-      message: 'File size too large. Maximum size is 5MB',
-    });
-  }
-
-  if (err.message && err.message.includes('Only image files')) {
-    return res.status(400).json({
-      success: false,
-      message: err.message,
-    });
-  }
-
+  console.error("Error:", err);
   res.status(err.status || 500).json({
     success: false,
-    message: err.message || 'Internal server error',
+    message: err.message || "Internal Server Error",
   });
 });
-
 
 async function sendDailyNewsletter() {
   const articles = await getTopHeadlines();
 
-  if (!articles.length) return console.log("No news to send!");
+  if (!articles.length) return console.log("No news to send today.");
 
   const html = `
-    <h2>Today's Headlines from NewsPulse</h2>
+    <h2>📰 Today's Top Headlines</h2>
     <ul>
       ${articles
         .map(
@@ -88,22 +74,25 @@ async function sendDailyNewsletter() {
         )
         .join("")}
     </ul>
-    <p>Have a great day!</p>`;
+    <p>Stay informed with NewsPulse 🚀</p>
+  `;
 
   await sendEmail("Daily Newsletter", html);
 }
+
+// Schedule: every day at 8 AM
 cron.schedule("0 8 * * *", () => {
+  console.log("⏰ Sending daily newsletter...");
   sendDailyNewsletter();
 });
-const PORT = process.env.PORT || 5000;
 
+const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🔗 Health check: http://localhost:${PORT}/health`);
+  console.log(`🔗 Health: http://localhost:${PORT}/health`);
 });
 
-process.on('unhandledRejection', (err) => {
-  console.error('❌ Unhandled Promise Rejection:', err);
+process.on("unhandledRejection", (err) => {
+  console.error("❌ Unhandled Promise Rejection:", err);
   server.close(() => process.exit(1));
 });
