@@ -64,7 +64,7 @@ const Explore = () => {
 const topCompanies = [
  {  sym: "AAPL",name: "Apple"      },    
  {  sym: "GOOGL",name: "Google"     },     
- {  sym: "MSFT",name: "Microsoft"      },      
+ {  sym: "MSFT",name: "Microsoft"   },      
  {  sym: "AMZN",name: "Amazon"    },    
  {  sym: "META",name: "Meta"     },     
  {  sym: "TSLA",name: "Tesla"      },      
@@ -133,7 +133,6 @@ const fetchAllStocks = async () => {
 </TouchableOpacity>
 
       </Animated.View>
-{/* SEarch Bar */}
       <Animated.View
         style={[
           styles.searchBar,
@@ -193,7 +192,6 @@ const fetchAllStocks = async () => {
         showsVerticalScrollIndicator={false}
       > 
 <TrendingTopics/>
-      {/* Sentiment legend (static UI) */}
       <View style={[styles.cardWrap, { backgroundColor: colors.border, borderColor: colors.border }]}> 
         <Text style={[styles.sectionTitle, { color: colors.secondary }]}>Sentiment spectrum</Text>
         <LinearGradient

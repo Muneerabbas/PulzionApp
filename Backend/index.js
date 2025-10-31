@@ -8,8 +8,7 @@ const path = require('path');
 const recommendRoutes = require('./routes/recommendRoutes'); 
 const statsRoutes = require('./routes/StatRoute'); 
 const cron = require('node-cron');
-const {emailService} = require('./services/emailService');
-const {newsService} = require('./services/newsService');
+
 
 dotenv.config();
 connectDB();
@@ -36,7 +35,6 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
-
 app.use('/api/auth', authRoutes);
 app.use('/api/news', newsRoutes);
 app.use('/api/recommend', recommendRoutes); 
