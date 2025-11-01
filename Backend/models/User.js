@@ -58,9 +58,9 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
-    isSubscribed: {               // <-- New field
-      type: Boolean,
-      default: false,             // false = not subscribed, true = subscribed
+    isSubscribed: {   
+      type: Boolean,            
+      default: false,             
     },
   },
   {
@@ -68,7 +68,6 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-// Password hashing middleware
 userSchema.pre('save', async function (next) {
   if (!this.isModified('passwordHash')) {
     return next();
@@ -83,7 +82,6 @@ userSchema.pre('save', async function (next) {
   }
 });
 
-// Compare passwords
 userSchema.methods.matchPassword = async function (enteredPassword) {
   try {
     return await bcrypt.compare(enteredPassword, this.passwordHash);
@@ -92,7 +90,6 @@ userSchema.methods.matchPassword = async function (enteredPassword) {
   }
 };
 
-// Public profile
 userSchema.methods.getPublicProfile = function () {
   return {
     _id: this._id,
@@ -100,13 +97,12 @@ userSchema.methods.getPublicProfile = function () {
     email: this.email,
     photo: this.photo,
     preferences: this.preferences,
-    isSubscribed: this.isSubscribed, // include subscription status
+    isSubscribed: this.isSubscribed, 
     createdAt: this.createdAt,
     lastLogin: this.lastLogin,
   };
 };
 
-// Find user by credentials
 userSchema.statics.findByCredentials = async function (email, password) {
   const user = await this.findOne({ email, isActive: true }).select('+passwordHash');
   

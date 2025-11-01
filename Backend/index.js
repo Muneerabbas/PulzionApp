@@ -8,8 +8,7 @@ const path = require('path');
 const recommendRoutes = require('./routes/recommendRoutes'); 
 const statsRoutes = require('./routes/StatRoute'); 
 const cron = require('node-cron');
-
-
+const { startNewsletterCron } = require('./services/newsLetterCron');
 dotenv.config();
 connectDB();
 
@@ -41,6 +40,7 @@ app.use("/api/news", newsRoutes);
 app.use("/api/recommend", recommendRoutes);
 app.use("/api/stats", statsRoutes);
 app.use("/api/email", emailRoutes);
+startNewsletterCron();
 
 // Not Found
 app.use((req, res) => {
@@ -58,34 +58,6 @@ app.use((err, req, res, next) => {
     message: err.message || "Internal Server Error",
   });
 });
-
-async function sendDailyNewsletter() {
-  const articles = await getTopHeadlines();
-
-  if (!articles.length) return console.log("No news to send today.");
-
-  const html = `
-    <h2>📰 Today's Top Headlines</h2>
-    <ul>
-      ${articles
-        .map(
-          (a) =>
-            `<li><a href="${a.url}" target="_blank">${a.title}</a><br/><small>${a.source.name}</small></li>`
-        )
-        .join("")}
-    </ul>
-    <p>Stay informed with NewsPulse 🚀</p>
-  `;
-
-  await sendEmail("Daily Newsletter", html);
-}
-
-// Schedule: every day at 8 AM
-cron.schedule("0 8 * * *", () => {
-  console.log("⏰ Sending daily newsletter...");
-  sendDailyNewsletter();
-});
-
 const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
