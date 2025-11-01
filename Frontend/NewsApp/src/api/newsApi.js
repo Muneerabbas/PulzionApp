@@ -1,28 +1,28 @@
-import { NEWS_API_URL } from "./axiosInstance.js";
+import { BASE_URL, NEWS_API_URL } from "./axiosInstance.js";
 import axios from "axios";
 
 const API_KEY = '01d9ee4aaee04beb96047ccfcd0a4e34';
 
 export const getNews = async () => {
-        try {
-            const response = await axios.get(`${NEWS_API_URL}/everything?q=trending&sortBy=popularity&language=en&apiKey=${API_KEY}`);
-            return response.data;
-        } catch (error) {
-            throw error.response?.data || { message: 'Failed to fetch news' };
-        }
+    try {
+        const response = await axios.get(`${NEWS_API_URL}/everything?q=trending&sortBy=popularity&language=en&apiKey=${API_KEY}`);
+        return response.data;
+    } catch (error) {
+        throw error.response?.data || { message: 'Failed to fetch news' };
+    }
 };
 
 export const getAllNews = async (n) => {
-        try {
-            if(!n){
-                const response = await axios.get(`${NEWS_API_URL}/top-headlines?language=en&apiKey=${API_KEY}`);
-                return response;
-            }
-            const response = await axios.get(`${NEWS_API_URL}/top-headlines?sources=${n}&apiKey=${API_KEY}`);
+    try {
+        if (!n) {
+            const response = await axios.get(`${NEWS_API_URL}/top-headlines?language=en&apiKey=${API_KEY}`);
             return response;
-        } catch (error) {
-            throw error.response?.data || { message: 'Failed to fetch news' };
         }
+        const response = await axios.get(`${NEWS_API_URL}/top-headlines?sources=${n}&apiKey=${API_KEY}`);
+        return response;
+    } catch (error) {
+        throw error.response?.data || { message: 'Failed to fetch news' };
+    }
 };
 
 export const getTopHeadlines = async () => {
@@ -85,12 +85,22 @@ export const getTechnologyNews = async () => {
 };
 
 //Bottom Data Fetching 
-export const getBottomNews = async ({query}) => {
+export const getBottomNews = async ({ query }) => {
     try {
         const response = await axios.get(`${NEWS_API_URL}/top-headlines?q=${query}&apiKey=${API_KEY}`);
         return response.data;
     } catch (error) {
         throw error.response?.data || { message: 'Failed to fetch' };
+    }
+};
+
+//fetch Stats
+export const getStats = async () => {
+    try {
+        const response = await axios.get(`${BASE_URL}/stats`);
+        return response.data;
+    } catch (error) {
+        throw error.response?.data || { message: 'Failed to fetch stats' };
     }
 };
 

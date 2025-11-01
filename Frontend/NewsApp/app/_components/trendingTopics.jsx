@@ -6,49 +6,63 @@ import { useTheme } from '../../src/context/ThemeContext';
 
 const { width } = Dimensions.get('window');
 
-const topics = [
-  {
-    name: 'Joe Biden',
-    views: '12.4k views',
-    image: 'https://mcdn.wallpapersafari.com/medium/55/52/3wmtVC.jpg',
-    size: 140,
-  },
-  {
-    name: 'D trump',
-    views: '10.4k views',
-    image: 'https://images.financialexpressdigital.com/2025/10/Trump-on-India-Pak-war.jpg?w=440',
-    size: 120,
-  },
-  {
-    name: 'Demi Lovato',
-    views: '8.4k views',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/8/8f/Demi_Lovato_at_2013_MTV_Video_Music_Awards.jpg',
-    size: 120,
-  },
-  {
-    name: 'Billie Eilish',
-    views: '6.4k views',
-    image: 'https://media.glamourmagazine.co.uk/photos/64ccca835c915d8a7f4f8bb8/16:9/w_2560%2Cc_limit/BILLIE%2520EILISH%2520040823%2520DEFAULT-GettyImages-1201586589.jpg',
-    size: 120,
-  },
-  {
-    name: 'Dua Lipa',
-    views: '5.4k views',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/1/1a/Dua_Lipa_-_Global_Awards_2020.png',
-    size: 110,
-  },
-  {
-    name: 'Elliot Page',
-    views: '3.4k views',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/9/9f/Elliot_Page_2014.jpg',
-    size: 110,
-  },
-];
+// const topics = [
+//   {
+//     name: 'Joe Biden',
+//     views: '12.4k views',
+//     image: 'https://mcdn.wallpapersafari.com/medium/55/52/3wmtVC.jpg',
+//     size: 140,
+//   },
+//   {
+//     name: 'D trump',
+//     views: '10.4k views',
+//     image: 'https://images.financialexpressdigital.com/2025/10/Trump-on-India-Pak-war.jpg?w=440',
+//     size: 120,
+//   },
+//   {
+//     name: 'Demi Lovato',
+//     views: '8.4k views',
+//     image: 'https://upload.wikimedia.org/wikipedia/commons/8/8f/Demi_Lovato_at_2013_MTV_Video_Music_Awards.jpg',
+//     size: 120,
+//   },
+//   {
+//     name: 'Billie Eilish',
+//     views: '6.4k views',
+//     image: 'https://media.glamourmagazine.co.uk/photos/64ccca835c915d8a7f4f8bb8/16:9/w_2560%2Cc_limit/BILLIE%2520EILISH%2520040823%2520DEFAULT-GettyImages-1201586589.jpg',
+//     size: 120,
+//   },
+//   {
+//     name: 'Dua Lipa',
+//     views: '5.4k views',
+//     image: 'https://upload.wikimedia.org/wikipedia/commons/1/1a/Dua_Lipa_-_Global_Awards_2020.png',
+//     size: 110,
+//   },
+//   {
+//     name: 'Elliot Page',
+//     views: '3.4k views',
+//     image: 'https://upload.wikimedia.org/wikipedia/commons/9/9f/Elliot_Page_2014.jpg',
+//     size: 110,
+//   },
+// ];
 
-const TrendingTopics = () => {
+const TrendingTopics = ({stats}) => {
   const { colors } = useTheme();
   const [failedIdx, setFailedIdx] = useState(new Set());
-  const FALLBACK_IMG = 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1600&auto=format&fit=crop';
+const topCategories = stats?.data?.category_stats?.top_categories;
+
+const categoryImages = {
+  Culture: require('../../assets/images/cat/culture.png'),
+  Technology: require('../../assets/images/cat/technology.png'),
+  Law: require('../../assets/images/cat/law.png'),
+  Business: require('../../assets/images/cat/business.png'),
+};
+
+const topCategoriesWithImages = topCategories?.map(cat => ({
+  ...cat,
+  image: categoryImages[cat.category] || require('../../assets/images/default.png'),
+}));
+
+console.log(topCategories);
   const renderItem = ({ item, index }) => (
     <TouchableOpacity
       key={index}
@@ -56,7 +70,7 @@ const TrendingTopics = () => {
       style={[styles.card, { backgroundColor: colors.border }]}
     >
       <Image
-        source={{ uri: failedIdx.has(index) ? FALLBACK_IMG : item.image }}
+        source={item?.image}
         style={StyleSheet.absoluteFill}
         resizeMode="cover"
         onError={() => setFailedIdx(prev => new Set(prev).add(index))}
@@ -70,17 +84,17 @@ const TrendingTopics = () => {
         pointerEvents="none"
       />
       <View style={styles.cardTextWrap}>
-        <Text numberOfLines={1} style={[styles.name, { color: '#ffffff'}]}>{item.name}</Text>
-        <Text numberOfLines={1} style={[styles.views, { color: '#ffffff'}]}>{item.views}</Text>
+        <Text numberOfLines={1} style={[styles.name, { color: '#ffffff'}]}>{item.category}</Text>
+        <Text numberOfLines={1} style={[styles.views, { color: '#ffffff'}]}>{item.volume} Articles</Text>
       </View>
     </TouchableOpacity>
   );
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.heading, { color: colors.secondary }]}>Trending topics</Text>
+      <Text style={[styles.heading, { color: colors.secondary }]}>Trending Categories</Text>
       <FlatList
-        data={topics}
+        data={topCategoriesWithImages}
         keyExtractor={(it, i) => `${it.name}-${i}`}
         renderItem={renderItem}
         horizontal

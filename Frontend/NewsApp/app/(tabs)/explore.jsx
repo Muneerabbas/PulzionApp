@@ -18,6 +18,7 @@ import { useTheme } from '../../src/context/ThemeContext';
 import TrendingTopics from '../_components/trendingTopics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { getStockQuote } from '../../src/api/stocksApi';
+import { getStats } from '../../src/api/newsApi';
 import Animated, {
   useAnimatedScrollHandler,
   useAnimatedStyle,
@@ -34,6 +35,7 @@ import { useBookmarks } from '../../src/context/BookmarkContext'
 const Explore = () => {
   const { user } = useAuth();
   const { colors } = useTheme();
+  const [stats,setStats] = useState([]);
     const scrollY = useSharedValue(0);
     const onScroll = useAnimatedScrollHandler({
     onScroll: (event) => {
@@ -106,6 +108,15 @@ const fetchAllStocks = async () => {
   }
 };
 
+const fetchStats = async () => {``
+  try {
+    const response = await getStats();
+    setStats(response);
+  } catch (error) {
+    console.error("Error fetching stats:", error);
+  }
+};
+
 const handleSearch = async () => {
   if (searchQuery.trim() === '') return;
   searchQuery.toLowerCase();
@@ -125,7 +136,25 @@ const handleSearch = async () => {
    useEffect(() => {
     
     fetchAllStocks();
+    fetchStats();
   },[]);
+
+
+const sentimentStats = stats?.data?.sentiment_stats?.counts;
+
+const {  neutral ,positive , negative , } = sentimentStats || {};
+const total = positive + negative + neutral || 1;
+
+const positiveRatio = positive / total; 
+const negativeRatio = negative / total; 
+const neutralRatio  = neutral  / total; 
+useEffect(() => {
+  if (sentimentStats) {
+    console.log('Positive Percentage:', positiveRatio);
+    console.log('Negative Percentage:', negativeRatio);
+    console.log('Neutral Percentage:', neutralRatio);
+  }
+}, [sentimentStats]);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.primary }]}> 
@@ -246,15 +275,23 @@ const handleSearch = async () => {
 {
 searchScreen?<SearchComp isLoading={isLoading}  searchedNews={searchedNews}/> : 
 <View>
-<TrendingTopics/>
+<TrendingTopics stats={stats}/>
    <View style={[styles.cardWrap, { backgroundColor: colors.border, borderColor: colors.border }]}> 
         <Text style={[styles.sectionTitle, { color: colors.secondary }]}>Sentiment spectrum</Text>
-        <LinearGradient
-          colors={[ '#ef4444', '#9ca3af', '#22c55e' ]}
-          start={{ x: 0, y: 0.5 }}
-          end={{ x: 1, y: 0.5 }}
-          style={styles.gradientBar}
-        />
+   <LinearGradient
+  colors={['#ef4444', '#ef4444', '#9ca3af', '#9ca3af', '#22c55e', '#22c55e']}
+  locations={[
+    0,
+    negativeRatio * 0.9,                                   
+    negativeRatio + neutralRatio * 0.2,          
+    negativeRatio + neutralRatio * 0.8,                   
+    negativeRatio + neutralRatio + positiveRatio * 0.1,    
+    1,
+  ]}
+  start={{ x: 0, y: 0.5 }}
+  end={{ x: 1, y: 0.5 }}
+  style={styles.gradientBar}
+/>
         <View style={styles.legendRow}>
           <Text style={[styles.legendText, { color: colors.text }]}>Negative</Text>
           <Text style={[styles.legendText, { color: colors.text }]}>Neutral</Text>
@@ -265,15 +302,15 @@ searchScreen?<SearchComp isLoading={isLoading}  searchedNews={searchedNews}/> :
       <View style={styles.summaryRow}>
         <View style={[styles.summaryCard, { backgroundColor: colors.border }]}>
           <Text style={[styles.summaryTitle, { color: colors.muted }]}>Negative</Text>
-          <Text style={[styles.summaryValue, { color: colors.secondary }]}>32</Text>
+          <Text style={[styles.summaryValue, { color: colors.secondary }]}>{negative}</Text>
         </View>
         <View style={[styles.summaryCard, { backgroundColor: colors.border }]}>
           <Text style={[styles.summaryTitle, { color: colors.muted }]}>Neutral</Text>
-          <Text style={[styles.summaryValue, { color: colors.secondary }]}>58</Text>
+          <Text style={[styles.summaryValue, { color: colors.secondary }]}>{neutral}</Text>
         </View>
         <View style={[styles.summaryCard, { backgroundColor: colors.border }]}>
           <Text style={[styles.summaryTitle, { color: colors.muted }]}>Positive</Text>
-          <Text style={[styles.summaryValue, { color: colors.secondary }]}>44</Text>
+          <Text style={[styles.summaryValue, { color: colors.secondary }]}>{positive}</Text>
         </View>
       </View>
       
