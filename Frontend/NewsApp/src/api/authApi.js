@@ -76,7 +76,7 @@ export const getBookmarks = async () => {
 
 export const getSubscription = async () => {
   try {
-    const res = await axiosInstance.get('/api/auth/subscribe');
+    const res = await axiosInstance.get('/auth/subscribe');
     return res.data.isSubscribed;
   } catch (err) {
     throw err.response?.data || { message: 'Failed to fetch subscription status' };
@@ -85,7 +85,7 @@ export const getSubscription = async () => {
 
 export const toggleSubscription = async (subscribe) => {
   try {
-    const res = await axiosInstance.patch('/api/auth/subscribe', { subscribe });
+    const res = await axiosInstance.patch('/auth/subscribe', { subscribe });
     return res.data.isSubscribed;
   } catch (err) {
     throw err.response?.data || { message: 'Failed to update subscription' };
@@ -93,7 +93,7 @@ export const toggleSubscription = async (subscribe) => {
 };
 export const addBookmark = async (articleId) => {
   try {
-    const res = await axiosInstance.post('api/auth/bookmarks', { articleId });
+    const res = await axiosInstance.post('/auth/bookmarks', { articleId });
     return res.data.bookmarks; // updated bookmarks array
   } catch (err) {
     throw err.response?.data || { message: 'Failed to add bookmark' };
