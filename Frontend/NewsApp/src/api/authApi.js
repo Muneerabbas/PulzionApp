@@ -65,6 +65,34 @@ export const updatePreferences = async (preferences) => {
     throw error.response?.data || { message: 'Failed to update preferences' };
   }
 };
+export const getBookmarks = async () => {
+  try {
+    const res = await axiosInstance.get('/auth/bookmarks');
+    return res.data.bookmarks; // array of bookmarked articles
+  } catch (err) {
+    throw err.response?.data || { message: 'Failed to fetch bookmarks' };
+  }
+};
+export const addBookmark = async (articleId) => {
+  try {
+    const res = await axiosInstance.post('/auth/bookmarks', { articleId });
+    return res.data.bookmarks; // updated bookmarks array
+  } catch (err) {
+    throw err.response?.data || { message: 'Failed to add bookmark' };
+  }
+};
+export const getSubscription = async () => {
+  const res = await axiosInstance.get('/auth/subscribed');
+  return res.data.isSubscribed;
+};
+
+export const toggleSubscription = async (subscribe) => {
+  const res = await axiosInstance.patch('/auth/subscribed', { subscribe });
+  return res.data.isSubscribed;
+};
+
+
+
 
 /**
  * Set authentication token

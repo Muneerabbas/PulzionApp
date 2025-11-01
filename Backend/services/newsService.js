@@ -1,36 +1,14 @@
-import axios from "axios";
-
-export async function getTopHeadlines() {
+const axios = require("axios");
+ async function getTopHeadlines() {
   try {
-    const res = await axios.get("https://newsapi.org/v2/top-headlines", {
-      params: {
-        country: "us",
-        pageSize: 5,
-        apiKey: process.env.NEWS_API_KEY,
-      },
-    });
-
+    const res = await axios.get(
+      `https://newsapi.org/v2/top-headlines?country=us&pageSize=20&apiKey=4d6bebc94a5046d7bd2d64ac5331d5da`
+    );
     return res.data.articles || [];
   } catch (err) {
-    console.error("Error fetching headlines:", err.message);
+    console.error("Error fetching news:", err.message);
     return [];
   }
 }
+module.exports = { getTopHeadlines };
 
-export async function searchNews(query) {
-  try {
-    const res = await axios.get("https://newsapi.org/v2/everything", {
-      params: {
-        q: query,
-        language: "en",
-        sortBy: "publishedAt",
-        apiKey: process.env.NEWS_API_KEY,
-      },
-    });
-
-    return res.data.articles || [];
-  } catch (err) {
-    console.error("Error searching news:", err.message);
-    return [];
-  }
-}
