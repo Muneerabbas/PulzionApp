@@ -31,6 +31,7 @@ import { Ionicons } from '@expo/vector-icons'
 import * as WebBrowser from 'expo-web-browser';
 import dayjs from 'dayjs';
 import { useBookmarks } from '../../src/context/BookmarkContext'
+import { getClosestArticles } from '../../src/api/recommendService';
 
 const Explore = () => {
   const { user } = useAuth();
@@ -116,21 +117,28 @@ const fetchStats = async () => {``
     console.error("Error fetching stats:", error);
   }
 };
-
 const handleSearch = async () => {
   if (searchQuery.trim() === '') return;
-  searchQuery.toLowerCase();
+
   setIsLoading(true);
   setSearchScreen(true);
-  try{
-    const response = await getBottomNews({query:searchQuery});
-    setSearchedNews(response.articles);
-    setIsLoading(false);
-  }catch(error){
+
+  try {
+    let response;
+
+    if (searchMode === '🤓 Smart Search') {
+      response = await getClosestArticles(searchQuery); 
+      setSearchedNews(response.articles || []); 
+    } else {
+            response = await getBottomNews({ query: searchQuery });
+      setSearchedNews(response.articles || []);
+    }
+  } catch (error) {
     console.log(error);
+    setSearchedNews([]);
+  } finally {
     setIsLoading(false);
   }
-
 };
 
    useEffect(() => {
