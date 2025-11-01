@@ -61,7 +61,7 @@ const handleSimilarArticle = async(item) => {
 }
 
   return (
-    <View style={[styles.card, { backgroundColor: colors.border }]}>
+    <View style={[styles.card, { backgroundColor: colors.border,marginTop:50 }]}>
       <View style={styles.imageContainer}>
         <Image source={{ uri: item?.urlToImage }} style={styles.image} resizeMode="cover" />
         <LinearGradient colors={['transparent', 'rgba(0,0,0,0.6)']} style={StyleSheet.absoluteFill} />
