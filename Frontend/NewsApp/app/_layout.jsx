@@ -13,7 +13,10 @@ import { enableLayoutAnimation } from 'react-native-reanimated';
 import { BottomSheetProvider } from "../src/context/bottomSheetContext";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 SplashScreen.preventAutoHideAsync();
-
+import { LogBox } from "react-native";
+ 
+LogBox.ignoreAllLogs(true);
+ 
 function LayoutContent() {
   const { colors } = useTheme();
   const { isAuthenticated, isLoading } = useAuth();

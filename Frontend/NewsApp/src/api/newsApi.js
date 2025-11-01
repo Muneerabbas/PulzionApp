@@ -1,7 +1,7 @@
 import { BASE_URL, NEWS_API_URL } from "./axiosInstance.js";
 import axios from "axios";
 
-// const API_KEY = 'b3cfbb4b58fe46098e8abb431c2b2284';
+ const API_KEY = '4d6bebc94a5046d7bd2d64ac5331d5da';
 
 export const getNews = async () => {
     try {
@@ -102,6 +102,36 @@ export const getStats = async () => {
     } catch (error) {
         throw error.response?.data || { message: 'Failed to fetch stats' };
     }
+};
+export const factCheckArticle = async (contentData) => {
+  try {
+    const factCheckPayload = buildFactCheckObject(contentData);
+    console.log("factCheckPayload",factCheckPayload)
+    const response = await axios.post(`${BASE_URL}/factcheck`, factCheckPayload);
+    return response.data;
+  } catch (error) {
+    console.error('❌ Fact check failed:', error);
+    throw new Error(error.response?.data?.message || 'Failed to fetch fact-check data');
+  }
+};
+const buildFactCheckObject = (contentData, rating = "Unverified") => {
+  if (!contentData) throw new Error("contentData is required");
+
+  return {
+    claims: [
+      {
+        text: contentData?.description || contentData?.title || "No description available",
+        claimant: contentData?.author || "Unknown",
+        claimReview: [
+          {
+            publisher: { name: contentData?.source?.name || "Unknown Source" },
+            textualRating: rating,
+            url: contentData?.url || null,
+          },
+        ],
+      },
+    ],
+  };
 };
 export const getSimilarArticle = async () => {
     try {
