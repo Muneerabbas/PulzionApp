@@ -232,7 +232,6 @@ const getUserProfile = async (req, res) => {
   }
 };
 
-// Update user preferences
 const updateUserPreferences = async (req, res) => {
   try {
     const { preferences } = req.body;
