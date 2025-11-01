@@ -44,9 +44,9 @@ const HomeHeader = () => {
 
       {/* Right Section */}
       <View style={{ flexDirection: "row", alignItems: "center" }}>
-        <TouchableOpacity style={T(mh(10))}>
+        {/* <TouchableOpacity style={T(mh(10))}>
     <Plus height={22} width={22} fill={colors.secondary}/>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         <TouchableOpacity style={T(mh(10))} onPress={toggleTheme}>
 {
@@ -59,9 +59,9 @@ const HomeHeader = () => {
 
         </TouchableOpacity>
 
-        <TouchableOpacity style={T(mh(10))}>
+        {/* <TouchableOpacity style={T(mh(10))}>
           <Menu height={22} width={22} fill={colors.secondary}/>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
     </View>
   );

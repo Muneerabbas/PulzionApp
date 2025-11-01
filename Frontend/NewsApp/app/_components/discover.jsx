@@ -4,10 +4,10 @@ import { useRouter } from "expo-router";
 import { useTheme } from "../../src/context/ThemeContext";
 const data = [
   { id: "1", type: "discover" },
-  { id: "4", image: require("../../assets/image2.png") },
-  { id: "3", image: require("../../assets/image1.png") },
-  { id: "2", image: require("../../assets/image.png") },
-  { id: "5", image: require("../../assets/image3.png") },
+  { id: "4", image: require("../../assets/image2.png"),name:"bbc-news" },
+  { id: "2", image: require("../../assets/bloom.png"),name:"bloomberg" },
+  { id: "3", image: require("../../assets/image1.png"),name:"cnn" },
+  { id: "5", image: require("../../assets/image3.png"),name:"business-insider" },
 ];
 
 
@@ -55,6 +55,9 @@ const StoryCircle = ({ item }) => {
           borderWidth: 1,
           borderColor:colors.secondary,
           overflow: "hidden",
+        }}
+        onPress={()=>{
+          router.push({ pathname: '/stories', params: { name: item.name } });
         }}
       >
         <Image

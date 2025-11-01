@@ -12,9 +12,13 @@ export const getNews = async () => {
         }
 };
 
-export const getAllNews = async () => {
+export const getAllNews = async (n) => {
         try {
-            const response = await axios.get(`${NEWS_API_URL}/everything?q=trending&apiKey=${API_KEY}`);
+            if(!n){
+                const response = await axios.get(`${NEWS_API_URL}/top-headlines?language=en&apiKey=${API_KEY}`);
+                return response;
+            }
+            const response = await axios.get(`${NEWS_API_URL}/top-headlines?sources=${n}&apiKey=${API_KEY}`);
             return response;
         } catch (error) {
             throw error.response?.data || { message: 'Failed to fetch news' };

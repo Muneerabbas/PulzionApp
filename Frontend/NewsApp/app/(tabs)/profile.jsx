@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -15,12 +15,14 @@ import { useAuth } from "../../src/context/AuthContext";
 import { useTheme } from "../../src/context/ThemeContext";
 import { useT } from "../../src/utils/tMiddleware";
 import { useRouter } from "expo-router";
+import { LinearGradient } from 'expo-linear-gradient';
 
 const Profile = () => {
   const { user, logout } = useAuth();
   const router = useRouter();
   const { colors, theme, toggleTheme } = useTheme();
   const { T, fb, fr, color, bg, flex, ai, mv, fs } = useT();
+  const [subscribed, setSubscribed] = useState(false);
 
   const handleLogout = () => {
     Alert.alert("Logout", "Are you sure you want to logout?", [
@@ -69,6 +71,27 @@ const Profile = () => {
           </Text>
         </View>
 
+        <TouchableOpacity
+          activeOpacity={0.85}
+          style={{ marginTop: 6, marginBottom: 10 }}
+          onPress={() => setSubscribed((s) => !s)}
+        >
+          <LinearGradient
+            colors={subscribed ? ["#22c55e", "#16a34a"] : ["#8b5cf6", "#6366f1", "#22c55e"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.subscribeBtn}
+          >
+            <Ionicons
+              name={subscribed ? "checkmark-circle-outline" : "mail-open-outline"}
+              size={20}
+              color="#fff"
+              style={{ marginRight: 8 }}
+            />
+            <Text style={styles.subscribeText}>{subscribed ? "Subscribed" : "Subscribe"}</Text>
+          </LinearGradient>
+        </TouchableOpacity>
+
         {/* Activity Section */}
         <Text style={[styles.sectionHeader, { color: colors.text }]}>
           Your Activity
@@ -78,13 +101,13 @@ const Profile = () => {
           style={[styles.optionCard, { backgroundColor: colors.tabbarbg }]}
         >
           <MaterialCommunityIcons
-            name={theme === "dark" ? "post" : "post-outline"}
+            name={theme === "dark" ? "bookmark-outline" : "bookmark-outline"}
             size={22}
             color={colors.text}
             style={{ marginRight: 10 }}
           />
           <Text style={[styles.optionText, { color: colors.text }]}>
-            Published Articles
+            BookMarks
           </Text>
         </TouchableOpacity>
 
@@ -152,20 +175,6 @@ const Profile = () => {
           style={[styles.optionCard, { backgroundColor: colors.tabbarbg }]}
         >
           <Ionicons
-            name={theme === "dark" ? "settings" : "settings-outline"}
-            size={22}
-            color={colors.text}
-            style={{ marginRight: 10 }}
-          />
-          <Text style={[styles.optionText, { color: colors.text }]}>
-            App Preferences
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.optionCard, { backgroundColor: colors.tabbarbg }]}
-        >
-          <Ionicons
             name={theme=="dark" ? "help-circle" : "help-circle-outline"}
             size={22}
             color={colors.text}
@@ -197,11 +206,16 @@ const styles = StyleSheet.create({
   profileContainer: {
     alignItems: "center",
     marginBottom: 25,
+  
+   
   },
   avatar: {
     height: 90,
     width: 90,
     borderRadius: 45,
+    resizeMode: "cover",
+    borderColor: "#222",
+    borderWidth: 1,
     marginBottom: 12,
   },
   username: {
@@ -230,6 +244,26 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: "MonaSans-Medium",
   },
+  subscribeBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    borderRadius: 14,
+    // shadow for iOS
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    // elevation for Android
+    elevation: 4,
+  },
+  subscribeText: {
+    color: '#fff',
+    fontSize: 16,
+    fontFamily: 'MonaSans-Bold',
+    letterSpacing: 0.3,
+  },
   logoutButton: {
     backgroundColor: "#FF3B30",
     paddingVertical: 14,
@@ -247,7 +281,8 @@ const styles = StyleSheet.create({
   },
   footer: {
     textAlign: "center",
-    marginTop: 100,
+    marginBottom: 70,
+    marginTop:50,
     fontSize: 13,
     fontFamily: "MonaSans-Regular",
   },
