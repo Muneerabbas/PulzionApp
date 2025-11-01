@@ -12,6 +12,7 @@ import {
   FlatList,
   // FIX: Make sure RefreshControl is imported
   RefreshControl,
+  Alert,
 } from 'react-native';
 import { useTheme } from '../../src/context/ThemeContext';
 import { useT } from '../../src/utils/tMiddleware';
@@ -81,6 +82,8 @@ const { toggleBookmark,isBookmarked,addBookmark,removeBookmark } = useBookmarks(
             }
           }}
           activeOpacity={0.7}
+           onLongPress={() => Alert.alert("Long Press!", "You held the button")}
+        delayLongPress={500}
         >
           <Text style={[T(fb(20),color(colors.primary),lh(22),mv(10),),{zIndex:10}]}
             numberOfLines={4}
@@ -509,7 +512,7 @@ useEffect(() => {
 
 {/* FIX: Use the 'refreshControl' prop with the RefreshControl component */}
 <ScrollView
-    style={{flex: 1}} // Ensure the ScrollView can take up space
+    style={{flex: 1}} 
     refreshControl={
         <RefreshControl 
             refreshing={refreshing} 
