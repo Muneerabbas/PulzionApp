@@ -128,7 +128,8 @@ const handleSearch = async () => {
 
     if (searchMode === '🤓 Smart Search') {
       response = await getClosestArticles(searchQuery); 
-      setSearchedNews(response.articles || []); 
+      setSearchedNews(response.results || []); 
+      console.log('dwedwedw...................',searchedNews);
     } else {
             response = await getBottomNews({ query: searchQuery });
       setSearchedNews(response.articles || []);
@@ -208,7 +209,7 @@ useEffect(() => {
           onPress={handleSearch}
           
         >
-          <Icon name="search-outline" size={20} color={colors.text} />
+          <Icon name="search-outline" size={20} color={colors.text} style={{marginHorizontal:10}}/>
         </TouchableOpacity>
 
 
@@ -219,7 +220,7 @@ useEffect(() => {
           placeholderTextColor={colors.text}
           style={[styles.input, { color: colors.secondary }]}
         />
-        <View>
+     { !searchScreen &&(  <View>
           <TouchableOpacity
             onPress={() => setIsDropdownOpen((v) => !v)}
             style={[styles.dropdown, { backgroundColor: colors.primary }]}
@@ -252,7 +253,7 @@ useEffect(() => {
           )}
 
          
-        </View>
+        </View>)}
          {
 
             searchScreen?<TouchableOpacity 
@@ -262,7 +263,7 @@ useEffect(() => {
             }}
             
           >
-            <Icon name="close" size={20} color={colors.text} />
+            <Icon name="close" size={20} color={colors.text}  style={{marginHorizontal:5}}/>
           </TouchableOpacity>:null
           }
       </Animated.View>
@@ -359,7 +360,14 @@ searchScreen?<SearchComp isLoading={isLoading}  searchedNews={searchedNews}/> :
 
 
 
-
+const Sentiment = ({sentiment}) => {
+    const { colors } = useTheme();
+    return (
+      <>
+      <Text style={[{ color: sentiment==='positive'?'#22c55e':sentiment==='negative'?'#ef4444':'#9ca3af', fontSize:14,fontFamily:'MonaSans-Regular' ,textTransform:'capitalize'}]}>{sentiment}</Text>
+        </>
+    )
+}
 const SearchComp = ({isLoading,searchedNews}) => {
 const { toggleBookmark ,isBookmarked} = useBookmarks()
 const renderItem = ({ item }) => (
@@ -370,7 +378,7 @@ const renderItem = ({ item }) => (
       <View style={mystyles.info}>
         <Text numberOfLines={3} style={[mystyles.title, { color: colors.secondary }]}>{item?.title || 'Untitled'}</Text>
         <Text style={[mystyles.meta, { color: colors.text }]}>
-          {item?.source?.name ? item.source.name : 'Unknown'} • {item?.publishedAt ? dayjs(item.publishedAt).format('DD MMM YYYY') : ''}
+          {item?.source?.name?item.source.name:<Sentiment sentiment={item?.sentiment}/>} • {item?.publishedAt ? dayjs(item.publishedAt).format('DD MMM YYYY') :dayjs(item.published_at).format('DD MMM YYYY') }
         </Text>
       </View>
       <TouchableOpacity onPress={() => toggleBookmark(item)} style={mystyles.action}>
