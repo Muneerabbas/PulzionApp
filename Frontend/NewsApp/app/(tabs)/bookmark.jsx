@@ -7,16 +7,16 @@ import dayjs from 'dayjs'
 import { Ionicons } from '@expo/vector-icons'
 import * as WebBrowser from 'expo-web-browser';
 import Stories from '../_components/story'
-
+import { useBottomSheet } from '../../src/context/bottomSheetContext'
 const { width } = Dimensions.get('window')
 
 const bookmark = () => {
   const { bookmarks, removeBookmark } = useBookmarks()
   const { colors } = useTheme()
-
+const { openSheet } = useBottomSheet();
   const renderItem = ({ item }) => (
     <TouchableOpacity
-    onPress={() => WebBrowser.openBrowserAsync(item?.url)}
+    onPress={()=>openSheet(item)}
     style={[styles.card, { backgroundColor: colors.border }]}> 
       <Image source={{ uri: item?.urlToImage }} style={styles.thumb} resizeMode="cover" />
       <View style={styles.info}>

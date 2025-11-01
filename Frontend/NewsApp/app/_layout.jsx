@@ -11,6 +11,7 @@ import 'react-native-reanimated';
 
 import { enableLayoutAnimation } from 'react-native-reanimated';
 import { BottomSheetProvider } from "../src/context/bottomSheetContext";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 SplashScreen.preventAutoHideAsync();
 
 function LayoutContent() {
@@ -105,14 +106,19 @@ export default function RootLayout() {
   if (!fontsLoaded) return null;
 
   return (
+        <GestureHandlerRootView style={{ flex: 1 }}>
+
     <ThemeProvider>
-      
+          <BottomSheetProvider>
+
       <AuthProvider>
         <BookmarkProvider>
         <LayoutContent />
         </BookmarkProvider>
       </AuthProvider>
-     
+         </BottomSheetProvider>
+
     </ThemeProvider>
+    </GestureHandlerRootView>
   );
 }

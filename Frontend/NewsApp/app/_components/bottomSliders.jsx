@@ -5,6 +5,7 @@ import { useTheme } from '../../src/context/ThemeContext'
 import * as WebBrowser from 'expo-web-browser';
 import { useBookmarks } from '../../src/context/BookmarkContext';
 import { Ionicons } from '@expo/vector-icons';
+import { useBottomSheet } from '../../src/context/bottomSheetContext';
 const { width } = Dimensions.get('window');
 const ITEM_WIDTH = width * 0.45;
 const ITEM_HEIGHT = ITEM_WIDTH * 1.2;
@@ -14,6 +15,7 @@ const ITEM_HEIGHT = ITEM_WIDTH * 1.2;
 
 const BottomSlider = ({ title="Trending Collection", data }) => {
 const { colors } = useTheme();
+const { openSheet } = useBottomSheet();
 const { toggleBookmark,isBookmarked } = useBookmarks();
 const { Tx,T, flex, fr, color, center, bg, fb, fm, fs, lh,mt,mb,br,mh,zi,ta,p} = useT();
   const renderItem = ({ item }) => (
@@ -39,7 +41,7 @@ const { Tx,T, flex, fr, color, center, bg, fb, fm, fs, lh,mt,mb,br,mh,zi,ta,p} =
                 onPress={async () => {
                   if (item?.url) {
                     try {
-                      await WebBrowser.openBrowserAsync(item.url);
+openSheet(item)
                     } catch (e) {}
                   }
                 }}

@@ -21,6 +21,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import * as WebBrowser from 'expo-web-browser';
+import { useBottomSheet } from '../../src/context/bottomSheetContext';
 
 dayjs.extend(relativeTime);
 
@@ -129,6 +130,7 @@ const handleSimilarArticle = async(item) => {
 
 const Trending = () => {
   const { colors } = useTheme();
+  const { openSheet } = useBottomSheet();
   const [news, setNews] = useState([]);
   const [swipeDir, setSwipeDir] = useState(null);
   const bgAnim = useState(new Animated.Value(0))[0];
@@ -389,7 +391,7 @@ const Trending = () => {
         ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
         renderItem={({ item }) => (
           <TouchableOpacity
-            onPress={() => item?.url && WebBrowser.openBrowserAsync(item.url)}
+            onPress={() => openSheet(item)}
             style={[styles.simCard, { backgroundColor: colors.border }]}
             activeOpacity={0.85}
           >

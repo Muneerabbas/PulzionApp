@@ -10,6 +10,8 @@ import {
   Image,
   Dimensions,
   FlatList,
+  // FIX: Make sure RefreshControl is imported
+  RefreshControl,
 } from 'react-native';
 import { useTheme } from '../../src/context/ThemeContext';
 import { useT } from '../../src/utils/tMiddleware';
@@ -109,7 +111,7 @@ const { toggleBookmark,isBookmarked,addBookmark,removeBookmark } = useBookmarks(
 
           <Text style={T(fr(12), color(colors.primary))}>{dayjs(item?.publishedAt).format('DD MMM YYYY')}</Text>
         </View>
-                  {/* <Text style={T(fr(12), color(colors.primary),ta('center'))}>Author {item?.author}</Text> */}
+                        {/* <Text style={T(fr(12), color(colors.primary),ta('center'))}>Author {item?.author}</Text> */}
 
       </View>
     </View>
@@ -130,9 +132,11 @@ const HomeCardskeleton = () => {
 
 
 
-
 const CACHE_DURATION =60 * 60 * 1000;
 export default function HorizontalTabs() {
+
+  const [refreshing, setRefreshing] = useState(false);
+
 const [topheadlines, setTopheadlines] = useState([]);
 const [businessNews, setBusinessNews] = useState([]);
 const [entertainmentNews, setEntertainmentNews] = useState([]);
@@ -175,6 +179,30 @@ const [aiNews, setAiNews] = useState([]);
 const [loading, setLoading] = useState(false);
 const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState(0);
+
+// --- START: Cache & Fetch Logic ---
+  const saveCache = async (key, data) => {
+    try {
+      await AsyncStorage.setItem(key, JSON.stringify({ data, time: Date.now() }));
+    } catch (e) {}
+  };
+  const loadCache = async (key) => {
+    try {
+      const raw = await AsyncStorage.getItem(key);
+      if (!raw) return null;
+      const obj = JSON.parse(raw);
+      // Backward-compat: if previous code stored the array directly
+      if (Array.isArray(obj)) return obj;
+      if (obj && obj.time && obj.data && obj.time + CACHE_DURATION > Date.now()) {
+        return obj.data;
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  };
+// --- END: Cache & Fetch Logic ---
+
 
 const fetchTopHeadlines = async () => {
   try {
@@ -316,16 +344,34 @@ const fetchBottomNews = async () => {
       ]);
       
 
-    
-     
-
-
-
-
     } catch (err) {
       setError(err.message);
     } finally {}
   };
+
+// FIX: handleRefresh function moved inside the component to access state setters and other functions
+const handleRefresh = async () => {
+  setRefreshing(true);
+  try {
+    // A simplified approach for refresh: just force-fetch everything again
+    // In a real app, you might only clear the cache for the currently active tab
+    await Promise.allSettled([
+      fetchTopHeadlines(),
+      fetchBusinessNews(),
+      fetchEntertainmentNews(),
+      fetchSportsNews(),
+      fetchHealthNews(),
+      fetchScienceNews(),
+      fetchTechnologyNews(),
+      fetchBottomNews(), 
+    ]);
+  } catch (e) {
+    console.warn('Refresh failed:', e);
+  } finally {
+    setRefreshing(false);
+  }
+};
+
 
 useEffect(() => {
   const init = async () => {
@@ -357,26 +403,7 @@ useEffect(() => {
   const containerLayouts = useRef([]); // per-tab container layout (x, width)
   const textLayouts = useRef([]); // per-tab text layout (x, width inside container)
   const [layoutTick, setLayoutTick] = useState(0); // force re-render when layouts update
-  const saveCache = async (key, data) => {
-    try {
-      await AsyncStorage.setItem(key, JSON.stringify({ data, time: Date.now() }));
-    } catch (e) {}
-  };
-  const loadCache = async (key) => {
-    try {
-      const raw = await AsyncStorage.getItem(key);
-      if (!raw) return null;
-      const obj = JSON.parse(raw);
-      // Backward-compat: if previous code stored the array directly
-      if (Array.isArray(obj)) return obj;
-      if (obj && obj.time && obj.data && obj.time + CACHE_DURATION > Date.now()) {
-        return obj.data;
-      }
-      return null;
-    } catch (e) {
-      return null;
-    }
-  };
+  
 
   const handlePress = (index) => {
     setActiveTab(index);
@@ -480,6 +507,17 @@ useEffect(() => {
         />
       </ScrollView>
 
+{/* FIX: Use the 'refreshControl' prop with the RefreshControl component */}
+<ScrollView
+    style={{flex: 1}} // Ensure the ScrollView can take up space
+    refreshControl={
+        <RefreshControl 
+            refreshing={refreshing} 
+            onRefresh={handleRefresh} 
+            tintColor={colors.secondary} // Use theme color for the spinner
+        />
+    }
+>
       {
         loading ? (
           <FlatList
@@ -494,6 +532,7 @@ useEffect(() => {
             snapToAlignment="center"
             contentContainerStyle={{ paddingHorizontal: (screenWidth - CARD_WIDTH) / 6 }}
             ItemSeparatorComponent={() => <View style={{ width: ITEM_SPACING }} />}
+              
             getItemLayout={(data, index) => ({
               length: CARD_WIDTH + ITEM_SPACING,
               offset: (CARD_WIDTH + ITEM_SPACING) * index,
@@ -522,10 +561,11 @@ useEffect(() => {
           })}
         />
         
-         <BottomSlider title={`${activeTab==0?'India':activeTab==1?'Startup':activeTab==2?'Movies':activeTab==3?'Cricket':activeTab==4?'Medical Science':activeTab==5?'Physics':'Artificial Intelligence'}`}  data={activeTab==0?topheadlinesIndia:activeTab==1?startupNews:activeTab==2?moviesNews:activeTab==3?cricketNews:activeTab==4?bodyNews:activeTab==5?physicsNews:aiNews}/>
-                 <BottomSlider title={`${activeTab==0?'USA':activeTab==1?'Stock Market':activeTab==2?'Music':activeTab==3?'Football':activeTab==4?'Fitness':activeTab==5?'Space':'Gadgets'}`}  data={activeTab==0?topheadlinesUSA:activeTab==1?stockNews:activeTab==2?musicNews:activeTab==3?footballNews:activeTab==4?fitnessNews:activeTab==5?spaceNews:gadgetsNews}/>
+          <BottomSlider title={`${activeTab==0?'India':activeTab==1?'Startup':activeTab==2?'Movies':activeTab==3?'Cricket':activeTab==4?'Medical Science':activeTab==5?'Physics':'Artificial Intelligence'}`}  data={activeTab==0?topheadlinesIndia:activeTab==1?startupNews:activeTab==2?moviesNews:activeTab==3?cricketNews:activeTab==4?bodyNews:activeTab==5?physicsNews:aiNews}/>
+              <BottomSlider title={`${activeTab==0?'USA':activeTab==1?'Stock Market':activeTab==2?'Music':activeTab==3?'Football':activeTab==4?'Fitness':activeTab==5?'Space':'Gadgets'}`}  data={activeTab==0?topheadlinesUSA:activeTab==1?stockNews:activeTab==2?musicNews:activeTab==3?footballNews:activeTab==4?fitnessNews:activeTab==5?spaceNews:gadgetsNews}/>
 
-      </View>)}
+        </View>)}
+</ScrollView>
     </SafeAreaView>
   );
 }
@@ -554,6 +594,6 @@ overflow:'hidden',
     fontSize:20,
     fontFamily:'MonaSans-Bold',
     color:'white',
-   
+    
 }
 });

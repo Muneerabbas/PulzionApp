@@ -32,8 +32,11 @@ import * as WebBrowser from 'expo-web-browser';
 import dayjs from 'dayjs';
 import { useBookmarks } from '../../src/context/BookmarkContext'
 import { getClosestArticles } from '../../src/api/recommendService';
+import { useBottomSheet } from '../../src/context/bottomSheetContext';
+
 
 const Explore = () => {
+  const { openSheet } = useBottomSheet();
   const { user } = useAuth();
   const { colors } = useTheme();
   const [stats,setStats] = useState([]);
@@ -369,10 +372,11 @@ const Sentiment = ({sentiment}) => {
     )
 }
 const SearchComp = ({isLoading,searchedNews}) => {
+const { openSheet } = useBottomSheet();
 const { toggleBookmark ,isBookmarked} = useBookmarks()
 const renderItem = ({ item }) => (
     <TouchableOpacity
-    onPress={() => WebBrowser.openBrowserAsync(item?.url)}
+    onPress={() => openSheet(item)}
     style={[mystyles.card,{ backgroundColor: colors.border}]}> 
       <Image source={{ uri: item?.urlToImage }} style={mystyles.thumb} resizeMode="cover" />
       <View style={mystyles.info}>
