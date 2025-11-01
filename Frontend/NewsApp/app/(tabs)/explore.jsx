@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  FlatList,
+  ActivityIndicator
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -23,6 +25,12 @@ import Animated, {
   interpolate,
   Extrapolate,
 } from "react-native-reanimated";
+import { getBottomNews } from '../../src/api/newsApi';
+import { Ionicons } from '@expo/vector-icons'
+import * as WebBrowser from 'expo-web-browser';
+import dayjs from 'dayjs';
+import { useBookmarks } from '../../src/context/BookmarkContext'
+
 const Explore = () => {
   const { user } = useAuth();
   const { colors } = useTheme();
@@ -73,7 +81,11 @@ const topCompanies = [
 ];
   const [stocks, setStocks] = useState([]);
   const [searchMode, setSearchMode] = useState('Search');
+  const [searchedNews, setSearchedNews] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+const[searchScreen,setSearchScreen] = useState(false);
 
 const fetchAllStocks = async () => {
   try {
@@ -94,6 +106,20 @@ const fetchAllStocks = async () => {
   }
 };
 
+const handleSearch = async () => {
+  if (searchQuery.trim() === '') return;
+  setIsLoading(true);
+  setSearchScreen(true);
+  try{
+    const response = await getBottomNews({query:searchQuery});
+    setSearchedNews(response.articles);
+    setIsLoading(false);
+  }catch(error){
+    console.log(error);
+    setIsLoading(false);
+  }
+
+};
 
    useEffect(() => {
     
@@ -139,16 +165,21 @@ const fetchAllStocks = async () => {
           { backgroundColor: colors.tabbarbg, borderColor: colors.border },
         ]}
       >
-        <Icon
-          name="search-outline"
-          size={20}
-          color={colors.muted}
-          style={{ marginHorizontal: 8 }}
-        />
+        
+<TouchableOpacity 
+          onPress={handleSearch}
+          
+        >
+          <Icon name="search-outline" size={20} color={colors.text} />
+        </TouchableOpacity>
+
+
         <TextInput
           placeholder='Search here'
-          placeholderTextColor={colors.muted}
-          style={[styles.input, { color: colors.text }]}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          placeholderTextColor={colors.text}
+          style={[styles.input, { color: colors.secondary }]}
         />
         <View>
           <TouchableOpacity
@@ -178,10 +209,28 @@ const fetchAllStocks = async () => {
               >
                 <Text style={[styles.dropdownItemText, { color: colors.text }]}>🤓 Smart Search</Text>
               </TouchableOpacity>
+              
             </View>
           )}
+
+         
         </View>
+         {
+
+            searchScreen?<TouchableOpacity 
+            onPress={()=>{
+              setSearchScreen(false)
+              setSearchQuery('')
+            }}
+            
+          >
+            <Icon name="close" size={20} color={colors.text} />
+          </TouchableOpacity>:null
+          }
       </Animated.View>
+
+
+
 
 
        <Animated.ScrollView 
@@ -191,9 +240,13 @@ const fetchAllStocks = async () => {
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
       > 
+
+
+{
+searchScreen?<SearchComp isLoading={isLoading}  searchedNews={searchedNews}/> : 
+<View>
 <TrendingTopics/>
-      {/* Sentiment legend*/}
-      <View style={[styles.cardWrap, { backgroundColor: colors.border, borderColor: colors.border }]}> 
+   <View style={[styles.cardWrap, { backgroundColor: colors.border, borderColor: colors.border }]}> 
         <Text style={[styles.sectionTitle, { color: colors.secondary }]}>Sentiment spectrum</Text>
         <LinearGradient
           colors={[ '#ef4444', '#9ca3af', '#22c55e' ]}
@@ -249,11 +302,62 @@ const fetchAllStocks = async () => {
           ))}
         </ScrollView>
       </View>
+  </View>   
+
+}  
           </Animated.ScrollView>
 
     </SafeAreaView>
   );
 };
+
+
+
+
+const SearchComp = ({isLoading,searchedNews}) => {
+const { toggleBookmark ,isBookmarked} = useBookmarks()
+const renderItem = ({ item }) => (
+    <TouchableOpacity
+    onPress={() => WebBrowser.openBrowserAsync(item?.url)}
+    style={[mystyles.card,{ backgroundColor: colors.border}]}> 
+      <Image source={{ uri: item?.urlToImage }} style={mystyles.thumb} resizeMode="cover" />
+      <View style={mystyles.info}>
+        <Text numberOfLines={3} style={[mystyles.title, { color: colors.secondary }]}>{item?.title || 'Untitled'}</Text>
+        <Text style={[mystyles.meta, { color: colors.text }]}>
+          {item?.source?.name ? item.source.name : 'Unknown'} • {item?.publishedAt ? dayjs(item.publishedAt).format('DD MMM YYYY') : ''}
+        </Text>
+      </View>
+      <TouchableOpacity onPress={() => toggleBookmark(item)} style={mystyles.action}>
+        <Ionicons name={isBookmarked(item?.url)?"bookmark" : "bookmark-outline"} size={22} color={colors.accent || colors.text} />
+      </TouchableOpacity>
+    </TouchableOpacity>
+  )
+
+
+    const { colors } = useTheme();
+    return (
+        <View>
+{
+
+  isLoading?<ActivityIndicator size="large" color={colors.secondary} />:
+  <View >
+
+{
+  searchedNews?.length>0?
+  <FlatList
+        data={searchedNews}
+      showsVerticalScrollIndicator={false}
+        keyExtractor={(item) => item.url}
+        renderItem={renderItem}
+        ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+      />:
+      <Text style={[styles.title, { color: colors.secondary, padding: 16, fontSize: 20, fontFamily: 'MonaSans-Bold',textAlign: 'center' }]}>No results found</Text>
+}
+  </View>
+}        </View>
+    );
+}
+
 
 export default Explore;
 
@@ -426,3 +530,57 @@ avatar: {
     fontFamily: 'MonaSans-Bold',
   },
 });
+
+const mystyles = StyleSheet.create({
+  
+  listContent: { padding: 16 },
+  card: {
+    flexDirection: 'row',
+    borderRadius: 16,
+    padding: 12,
+    alignSelf:'center',
+    flex:1,
+    width:'100%',
+    alignItems: 'center',
+  },
+  thumb: {
+    width: 72,
+    height: 90,
+    borderRadius: 12,
+    backgroundColor: '#ccc',
+  },
+  info: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  title: {
+    fontSize: 16,
+    fontFamily: 'MonaSans-Bold',
+  },
+  meta: {
+    marginTop: 6,
+    fontSize: 13,
+    fontFamily: 'MonaSans-Regular',
+  },
+  emptyWrap: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  emptyTitle: {
+    fontSize: 20,
+    fontFamily: 'MonaSans-Bold',
+    marginTop: 12,
+  },
+  emptySub: {
+    fontSize: 14,
+    fontFamily: 'MonaSans-Regular',
+    marginTop: 6,
+  },
+  action:{
+ 
+    height:'100%',
+ 
+  }
+})

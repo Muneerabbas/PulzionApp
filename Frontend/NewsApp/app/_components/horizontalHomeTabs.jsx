@@ -20,9 +20,7 @@ import * as WebBrowser from 'expo-web-browser';
 import dayjs from 'dayjs';
 import { Ionicons } from '@expo/vector-icons';
 import { useBookmarks } from '../../src/context/BookmarkContext';
-// for trending
-// const url = 'https://newsapi.org/v2/everything?q=trending&sortBy=popularity&language=en&apiKey=04cdd66f88014fed9689e01f257ea000';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const TABS = ['Top Headlines', 'Business', 'Entertainment', 'Sports', 'Health', 'Science', 'Technology'];
 
 
@@ -133,7 +131,7 @@ const HomeCardskeleton = () => {
 
 
 
-
+const CACHE_DURATION =60 * 60 * 1000;
 export default function HorizontalTabs() {
 const [topheadlines, setTopheadlines] = useState([]);
 const [businessNews, setBusinessNews] = useState([]);
@@ -179,24 +177,30 @@ const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState(0);
 
 const fetchTopHeadlines = async () => {
-  setLoading(true);
   try {
+    const cached = await loadCache('topheadlines');
+    if (cached) {
+      setTopheadlines(cached);
+      return;
+    }
     const response = await getTopHeadlines();
     setTopheadlines(response.articles);
-
+    await saveCache('topheadlines', response.articles);
   } catch (err) {
     setError(err.message);
-  } finally {
-    setLoading(false);
-  }
+  } finally {}
 };
 
 const fetchBusinessNews = async () => {
-  setLoading(true);
   try {
+    const cached = await loadCache('businessNews');
+    if (cached) {
+      setBusinessNews(cached);
+      return;
+    }
     const response = await getBusinessNews();
     setBusinessNews(response.articles);
-
+    await saveCache('businessNews', response.articles);
   } catch (err) {
     setError(err.message);
   } finally {
@@ -204,21 +208,29 @@ const fetchBusinessNews = async () => {
   }
 };
   const fetchEntertainmentNews = async () => {
-    setLoading(true);
     try {
+      const cached = await loadCache('entertainmentNews');
+      if (cached) {
+        setEntertainmentNews(cached);
+        return;
+      }
       const response = await getEntertainmentNews();
       setEntertainmentNews(response.articles);
+      await saveCache('entertainmentNews', response.articles);
     } catch (err) {
       setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+    } finally {}
   };
   const fetchSportsNews = async () => {
-    setLoading(true);
     try {
+      const cached = await loadCache('sportsNews');
+      if (cached) {
+        setSportsNews(cached);
+        return;
+      }
       const response = await getSportsNews();
       setSportsNews(response.articles);
+      await saveCache('sportsNews', response.articles);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -226,10 +238,15 @@ const fetchBusinessNews = async () => {
     }
   };
   const fetchHealthNews = async () => {
-    setLoading(true);
     try {
+      const cached = await loadCache('healthNews');
+      if (cached) {
+        setHealthNews(cached);
+        return;
+      }
       const response = await getHealthNews();
       setHealthNews(response.articles);
+      await saveCache('healthNews', response.articles);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -237,10 +254,15 @@ const fetchBusinessNews = async () => {
     }
   };
   const fetchScienceNews = async () => {
-    setLoading(true);
     try {
+      const cached = await loadCache('scienceNews');
+      if (cached) {
+        setScienceNews(cached);
+        return;
+      }
       const response = await getScienceNews();
       setScienceNews(response.articles);
+      await saveCache('scienceNews', response.articles);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -248,10 +270,15 @@ const fetchBusinessNews = async () => {
     }
   };
   const fetchTechnologyNews = async () => {
-    setLoading(true);
     try {
+      const cached = await loadCache('technologyNews');
+      if (cached) {
+        setTechnologyNews(cached);
+        return;
+      }
       const response = await getTechnologyNews();
       setTechnologyNews(response.articles);
+      await saveCache('technologyNews', response.articles);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -259,37 +286,34 @@ const fetchBusinessNews = async () => {
     }
   };
 const fetchBottomNews = async () => {
-    setLoading(true);
     try {
-      const response = await getBottomNews({query:'india'});
-      setTopheadlinesIndia(response.articles);
-    const response2 = await getBottomNews({query:'usa'});
-      setTopheadlinesUSA(response2.articles);
+      const ensure = async (key, query, setter) => {
+        const cached = await loadCache(key);
+        if (cached) {
+          setter(cached);
+          return;
+        }
+        const resp = await getBottomNews({ query });
+        setter(resp.articles);
+        await saveCache(key, resp.articles);
+      };
 
-      const response3 = await getBottomNews({query:'startup'});
-      setStartupNews(response3.articles);
-      const response4 = await getBottomNews({query:'stock market'});
-      setStockNews(response4.articles);
-      const response5 = await getBottomNews({query:'movies'});
-      setMoviesNews(response5.articles);
-      const response6 = await getBottomNews({query:'music'});
-      setMusicNews(response6.articles);
-      const response7 = await getBottomNews({query:'gadgets'});
-      setGadgetsNews(response7.articles);
-      const response8 = await getBottomNews({query:'artificial intelligence'});
-      setAiNews(response8.articles);
-      const response9 = await getBottomNews({query:'science'});
-      setPhysicsNews(response9.articles);
-      const response10 = await getBottomNews({query:'space'});
-      setSpaceNews(response10.articles);
-      const response11 = await getBottomNews({query:'fitness'});
-      setFitnessNews(response11.articles);
-      const response12 = await getBottomNews({query:'medical'});
-      setBodyNews(response12.articles);
-      const response13 = await getBottomNews({query:'cricket'});
-      setCricketNews(response13.articles);
-      const response14 = await getBottomNews({query:'football'});
-      setFootballNews(response14.articles);
+      await Promise.allSettled([
+        ensure('bottom_india', 'india', setTopheadlinesIndia),
+        ensure('bottom_usa', 'usa', setTopheadlinesUSA),
+        ensure('bottom_startup', 'startup', setStartupNews),
+        ensure('bottom_stock', 'stock market', setStockNews),
+        ensure('bottom_movies', 'movies', setMoviesNews),
+        ensure('bottom_music', 'music', setMusicNews),
+        ensure('bottom_gadgets', 'gadgets', setGadgetsNews),
+        ensure('bottom_ai', 'artificial intelligence', setAiNews),
+        ensure('bottom_science', 'science', setPhysicsNews),
+        ensure('bottom_space', 'space', setSpaceNews),
+        ensure('bottom_fitness', 'fitness', setFitnessNews),
+        ensure('bottom_medical', 'medical', setBodyNews),
+        ensure('bottom_cricket', 'cricket', setCricketNews),
+        ensure('bottom_football', 'football', setFootballNews),
+      ]);
       
 
     
@@ -300,26 +324,28 @@ const fetchBottomNews = async () => {
 
     } catch (err) {
       setError(err.message);
+    } finally {}
+  };
+
+useEffect(() => {
+  const init = async () => {
+    setLoading(true);
+    try {
+      await Promise.allSettled([
+        fetchTopHeadlines(),
+        fetchBusinessNews(),
+        fetchEntertainmentNews(),
+        fetchSportsNews(),
+        fetchHealthNews(),
+        fetchScienceNews(),
+        fetchTechnologyNews(),
+        fetchBottomNews(),
+      ]);
     } finally {
       setLoading(false);
     }
   };
-
-useEffect(() => {
- 
-    fetchTopHeadlines();
-     fetchBusinessNews();
- 
-       fetchEntertainmentNews();
- 
-    fetchSportsNews();
- 
-    fetchHealthNews();
-      fetchScienceNews();
-    fetchTechnologyNews();
-    fetchBottomNews();
-    console.log(startupNews)
-
+  init();
 },[]);
 
 
@@ -331,6 +357,26 @@ useEffect(() => {
   const containerLayouts = useRef([]); // per-tab container layout (x, width)
   const textLayouts = useRef([]); // per-tab text layout (x, width inside container)
   const [layoutTick, setLayoutTick] = useState(0); // force re-render when layouts update
+  const saveCache = async (key, data) => {
+    try {
+      await AsyncStorage.setItem(key, JSON.stringify({ data, time: Date.now() }));
+    } catch (e) {}
+  };
+  const loadCache = async (key) => {
+    try {
+      const raw = await AsyncStorage.getItem(key);
+      if (!raw) return null;
+      const obj = JSON.parse(raw);
+      // Backward-compat: if previous code stored the array directly
+      if (Array.isArray(obj)) return obj;
+      if (obj && obj.time && obj.data && obj.time + CACHE_DURATION > Date.now()) {
+        return obj.data;
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  };
 
   const handlePress = (index) => {
     setActiveTab(index);
