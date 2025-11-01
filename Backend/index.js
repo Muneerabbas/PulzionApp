@@ -11,6 +11,7 @@ const cron = require('node-cron');
 const { startNewsletterCron } = require('./services/newsLetterCron');
 dotenv.config();
 connectDB();
+const factCheckRoutes = require("./routes/factCheckRoutes.js");
 
 const app = express();
 
@@ -40,6 +41,7 @@ app.use("/api/news", newsRoutes);
 app.use("/api/recommend", recommendRoutes);
 app.use("/api/stats", statsRoutes);
 app.use("/api/email", emailRoutes);
+app.use("/api/factcheck", factCheckRoutes);
 startNewsletterCron();
 
 // Not Found
