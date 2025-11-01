@@ -24,6 +24,7 @@ import dayjs from 'dayjs';
 import { Ionicons } from '@expo/vector-icons';
 import { useBookmarks } from '../../src/context/BookmarkContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useBottomSheet} from '../../src/context/bottomSheetContext';
 const TABS = ['Top Headlines', 'Business', 'Entertainment', 'Sports', 'Health', 'Science', 'Technology'];
 
 
@@ -40,6 +41,7 @@ const TABS = ['Top Headlines', 'Business', 'Entertainment', 'Sports', 'Health', 
 const HomeCard = ({item}) => {
   const { Tx, T, row, ai, ml, mr, fb, color, lh, fr, mt, jc, br, flex, p ,fs,fm,mv} = useT();
   const { colors, theme } = useTheme();
+  const { openSheet } = useBottomSheet();
 const { toggleBookmark,isBookmarked,addBookmark,removeBookmark } = useBookmarks();
 
 
@@ -77,13 +79,12 @@ const { toggleBookmark,isBookmarked,addBookmark,removeBookmark } = useBookmarks(
           onPress={async () => {
             if (item?.url) {
               try {
-                await WebBrowser.openBrowserAsync(item.url);
+                openSheet(item)
               } catch (e) {}
             }
           }}
           activeOpacity={0.7}
-           onLongPress={() => Alert.alert("Long Press!", "You held the button")}
-        delayLongPress={500}
+         
         >
           <Text style={[T(fb(20),color(colors.primary),lh(22),mv(10),),{zIndex:10}]}
             numberOfLines={4}
