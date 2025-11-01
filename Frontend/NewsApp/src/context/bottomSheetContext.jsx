@@ -143,7 +143,7 @@ export const BottomSheetProvider = ({ children }) => {
                       end={[1, 1]}
                       style={{
                         paddingVertical: 12,
-                        paddingHorizontal: 30,
+                        paddingHorizontal: 20,
                         borderRadius: 20,
                         alignItems: 'center',
                         flexDirection: 'row',
@@ -176,7 +176,7 @@ export const BottomSheetProvider = ({ children }) => {
                       end={[1, 1]}
                       style={{
                         paddingVertical: 12,
-                        paddingHorizontal: 30,
+                        paddingHorizontal: 20,
                         borderRadius: 20,
                         alignItems: 'center',
                         flexDirection: 'row',
