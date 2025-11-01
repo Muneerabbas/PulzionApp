@@ -108,6 +108,7 @@ const fetchAllStocks = async () => {
 
 const handleSearch = async () => {
   if (searchQuery.trim() === '') return;
+  searchQuery.toLowerCase();
   setIsLoading(true);
   setSearchScreen(true);
   try{
