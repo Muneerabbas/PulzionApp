@@ -1,4 +1,6 @@
-module.exports = async function sendEmail(subject, html, toEmail) {
+const nodemailer = require('nodemailer');
+
+const sendEmail = async (subject, html, toEmail) => {
   try {
     const transporter = nodemailer.createTransport({
       service: "gmail",
@@ -18,6 +20,9 @@ module.exports = async function sendEmail(subject, html, toEmail) {
     console.log(`📧 Email sent to ${toEmail}`);
   } catch (err) {
     console.error("❌ Email send error:", err.message);
-    throw err; // <-- rethrow so controller can handle it
+    throw err; 
   }
 }
+
+module.exports = sendEmail;
+
