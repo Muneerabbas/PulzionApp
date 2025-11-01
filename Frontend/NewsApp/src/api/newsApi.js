@@ -1,7 +1,7 @@
 import { NEWS_API_URL } from "./axiosInstance.js";
 import axios from "axios";
 
-const API_KEY = 'f0562f7897534b859243e0360dd03d2e';
+const API_KEY = '01d9ee4aaee04beb96047ccfcd0a4e34';
 
 export const getNews = async () => {
         try {

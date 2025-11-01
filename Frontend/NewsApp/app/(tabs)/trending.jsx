@@ -1,5 +1,3 @@
-// screens/Trending.js (Complete Updated File)
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
@@ -17,14 +15,13 @@ import Swiper from 'react-native-deck-swiper';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../src/context/ThemeContext';
 import { getRecommendations } from '../../src/api/recommendService';
-import AsyncStorage from '@react-native-async-storage/async-storage'; // <-- NEW IMPORT
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
 
 const { width, height } = Dimensions.get('window');
 
-// --- NEW: Define keys for AsyncStorage ---
 const ASYNC_STORAGE_KEYS = {
   HISTORY: '@NewsPulse_userHistory',
   LIKES: '@NewsPulse_likedArticleIds',
@@ -32,42 +29,37 @@ const ASYNC_STORAGE_KEYS = {
   SOURCES: '@NewsPulse_seenSources',
 };
 
-// ------------------ CARD COMPONENT (Unchanged) ------------------
 const Card = ({ item, colors }) => {
-  // ... (This component is unchanged)
   const sentimentMap = { positive: 2, neutral: 1, negative: 0 };
   const sentimentScore = sentimentMap[item?.sentiment] ?? 1;
+  console.log("Item data",item)
   const sentimentColor =
     sentimentScore === 2 ? '#1fc16b' : sentimentScore === 1 ? '#fbbc04' : '#ff4d4f';
-  const topics =
-    item?.keywords?.length > 0
-      ? item.keywords.slice(0, 5)
-      : item?.categories?.length > 0
-      ? item.categories.slice(0, 3)
-      : ['News', 'Update'];
+  const categories =
+    item?.categories?.length > 0 ? item.categories.slice(0, 3) : ['News', 'Update'];
 
   return (
     <View style={[styles.card, { backgroundColor: colors.border }]}>
       <View style={styles.imageContainer}>
         <Image source={{ uri: item?.urlToImage }} style={styles.image} resizeMode="cover" />
-        <LinearGradient
-          colors={['transparent', 'rgba(0,0,0,0.6)']}
-          style={StyleSheet.absoluteFill}
-        />
+        <LinearGradient colors={['transparent', 'rgba(0,0,0,0.6)']} style={StyleSheet.absoluteFill} />
       </View>
-      <View style={styles.authorSection}>
-        <Text style={[styles.author, { color: colors.secondary }]}>{item?.author || 'Anonymous'}</Text>
-        <Text style={[styles.timeAgo, { color: colors.secondary }]}>
-          {dayjs(item?.published_at).fromNow()}
+
+      <View style={styles.textContainer}>
+      
+         <Text numberOfLines={10} style={styles.title}>
+          {item?.title || 'No Title'}
         </Text>
-      </View>
-      <Text numberOfLines={5} style={[styles.title, { color: colors.secondary }]}>
-        {item?.description || 'No Description'}
-      </Text>
-      <View style={styles.sentimentContainer}>
+        <Text numberOfLines={10} style={styles.title2}>
+          {item?.description || 'No Description'}
+        </Text>
+          <Text style={styles.author}>-{item?.author || 'Anonymous'}</Text>
+        <Text style={styles.timeAgo}>{dayjs(item?.published_at).fromNow()}</Text>
+         <View style={styles.sentimentContainer}>
         <LinearGradient
           colors={['#ff4d4f', '#fbbc04', '#1fc16b']}
-          start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
           style={styles.sentimentBar}
         />
         <View
@@ -78,177 +70,161 @@ const Card = ({ item, colors }) => {
         />
       </View>
       <ScrollView
-        horizontal showsHorizontalScrollIndicator={false}
+        horizontal
+        showsHorizontalScrollIndicator={false}
         style={styles.topicsContainer}
         contentContainerStyle={{ paddingHorizontal: 8 }}
       >
-        {topics.map((topic, index) => (
+        {categories.map((category, index) => (
           <LinearGradient
             key={index}
             colors={['#4facfe', '#00f2fe']}
-            start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
             style={styles.topicCapsule}
           >
-            <Text style={styles.topicText}>{topic}</Text>
+            <Text style={styles.topicText}>{category}</Text>
           </LinearGradient>
         ))}
       </ScrollView>
+      
+      </View>
+
+     <TouchableOpacity activeOpacity={0.8} onPress={()=>{}} style={styles.buttonWrapper}>
+      <LinearGradient
+        colors={['#38033dff', '#11ced8ff']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.button}
+      >
+        <Text style={styles.buttonText}>Read More articles like this</Text>
+      </LinearGradient>
+    </TouchableOpacity>
+
+      
     </View>
   );
 };
 
-// ------------------ TRENDING COMPONENT (Updated) ------------------
 const Trending = () => {
   const { colors } = useTheme();
   const [news, setNews] = useState([]);
   const [swipeDir, setSwipeDir] = useState(null);
   const bgAnim = useState(new Animated.Value(0))[0];
-  
-  // --- NEW: Separate loading states ---
-  const [isHydrating, setIsHydrating] = useState(true); // For loading from storage
-  const [isFetching, setIsFetching] = useState(false);  // For API calls
-  
-  const swiperRef = useRef(null);
+  const [isHydrating, setIsHydrating] = useState(true);
+  const [isFetching, setIsFetching] = useState(false);
   const [swipedAll, setSwipedAll] = useState(false);
-
-  // We still use refs for instant access in callbacks
+  const swiperRef = useRef(null);
+  const isFetchingRef = useRef(false);
   const userHistoryRef = useRef(new Set());
   const likedArticleIdsRef = useRef([]);
   const dislikedArticleIdsRef = useRef([]);
   const seenSourcesRef = useRef(new Set());
 
-  // --- NEW: Hydration Effect ---
-  // Runs ONCE on component mount to load persistent state
   useEffect(() => {
     const hydrateState = async () => {
       try {
-        // Load all data from storage in parallel
         const [history, likes, dislikes, sources] = await Promise.all([
           AsyncStorage.getItem(ASYNC_STORAGE_KEYS.HISTORY),
           AsyncStorage.getItem(ASYNC_STORAGE_KEYS.LIKES),
           AsyncStorage.getItem(ASYNC_STORAGE_KEYS.DISLIKES),
           AsyncStorage.getItem(ASYNC_STORAGE_KEYS.SOURCES),
         ]);
-
-        // Populate our refs with the stored data
         userHistoryRef.current = history ? new Set(JSON.parse(history)) : new Set();
         likedArticleIdsRef.current = likes ? JSON.parse(likes) : [];
         dislikedArticleIdsRef.current = dislikes ? JSON.parse(dislikes) : [];
         seenSourcesRef.current = sources ? new Set(JSON.parse(sources)) : new Set();
-        
       } catch (e) {
-        console.error("Failed to hydrate state from AsyncStorage", e);
-        // On error, just start fresh
+        console.error('Failed to hydrate state', e);
       } finally {
-        setIsHydrating(false); // Hydration is done
+        setIsHydrating(false);
       }
     };
-
     hydrateState();
-  }, []); // Empty array, runs once on mount
+  }, []);
 
-  // --- Updated fetchNews function ---
-  const fetchNews = useCallback(async (isRefresh = false) => {
-    if (isFetching) return 0; // Prevent parallel fetches
-    
-    setIsFetching(true);
-    setSwipedAll(false);
-
-    if (isRefresh) {
-      // On a full refresh, clear the session history
-      userHistoryRef.current.clear();
-      likedArticleIdsRef.current = [];
-      dislikedArticleIdsRef.current = [];
-      seenSourcesRef.current.clear();
-      
-      // NEW: Clear AsyncStorage as well
-      await Promise.all([
-        AsyncStorage.removeItem(ASYNC_STORAGE_KEYS.HISTORY),
-        AsyncStorage.removeItem(ASYNC_STORAGE_KEYS.LIKES),
-        AsyncStorage.removeItem(ASYNC_STORAGE_KEYS.DISLIKES),
-        AsyncStorage.removeItem(ASYNC_STORAGE_KEYS.SOURCES),
-      ]);
-    }
-
-    // Get the ID of the *very last* article liked
-    const lastLikedArticleId = likedArticleIdsRef.current[0] || null;
-
-    try {
-      const response = await getRecommendations({
-        articleId: lastLikedArticleId,
-        likedArticleIds: likedArticleIdsRef.current,
-        dislikedArticleIds: dislikedArticleIdsRef.current,
-        userHistory: [...userHistoryRef.current],
-        seenSources: [...seenSourcesRef.current],
-        topK: 10,
-      });
-
-      const newRecs = response?.data?.recommendations || [];
-
-      if (newRecs.length > 0) {
-        // Add new articles to our history tracker *immediately*
-        newRecs.forEach(article => userHistoryRef.current.add(article.id));
-        
-        // NEW: Persist the *new* history (fire-and-forget)
-        AsyncStorage.setItem(
-          ASYNC_STORAGE_KEYS.HISTORY, 
-          JSON.stringify([...userHistoryRef.current])
-        ).catch(e => console.error("AsyncStorage history write error", e));
-        
-        // Add to the *end* of the deck
-        setNews(prevNews => (isRefresh ? newRecs : [...prevNews, ...newRecs]));
+  const fetchNews = useCallback(
+    async (isRefresh = false) => {
+      if (isFetchingRef.current) return 0;
+      isFetchingRef.current = true;
+      setIsFetching(true);
+      setSwipedAll(false);
+      if (isRefresh) {
+        userHistoryRef.current.clear();
+        likedArticleIdsRef.current = [];
+        dislikedArticleIdsRef.current = [];
+        seenSourcesRef.current.clear();
+        await Promise.all([
+          AsyncStorage.removeItem(ASYNC_STORAGE_KEYS.HISTORY),
+          AsyncStorage.removeItem(ASYNC_STORAGE_KEYS.LIKES),
+          AsyncStorage.removeItem(ASYNC_STORAGE_KEYS.DISLIKES),
+          AsyncStorage.removeItem(ASYNC_STORAGE_KEYS.SOURCES),
+        ]);
       }
-      
-      return newRecs.length; // Return count for logic
-    } catch (error) {
-      console.error('Error fetching recommendations:', error);
-      return 0;
-    } finally {
-      setIsFetching(false);
-    }
-  }, [isFetching]); // Dependency on isFetching to prevent races
+      const lastLikedArticleId = likedArticleIdsRef.current[0] || null;
+      try {
+        const response = await getRecommendations({
+          articleId: lastLikedArticleId,
+          likedArticleIds: likedArticleIdsRef.current,
+          dislikedArticleIds: dislikedArticleIdsRef.current,
+          userHistory: [...userHistoryRef.current],
+          seenSources: [...seenSourcesRef.current],
+          topK: 20,
+        });
+        const newRecs = response?.data?.recommendations || [];
+        if (newRecs.length > 0) {
+          newRecs.forEach(article => userHistoryRef.current.add(article.id));
+          AsyncStorage.setItem(
+            ASYNC_STORAGE_KEYS.HISTORY,
+            JSON.stringify([...userHistoryRef.current])
+          ).catch(e => console.error('AsyncStorage write error', e));
+          setNews(prevNews => (isRefresh ? newRecs : [...prevNews, ...newRecs]));
+        } else if (news.length === 0) {
+          setSwipedAll(true);
+        }
+        return newRecs.length;
+      } catch (error) {
+        console.error('Error fetching recommendations:', error);
+        return 0;
+      } finally {
+        isFetchingRef.current = false;
+        setIsFetching(false);
+      }
+    },
+    []
+  );
 
   useEffect(() => {
-    if (!isHydrating) { // Only fetch *after* hydration
-      fetchNews(true); // Initial load is a "refresh"
-    }
-  }, [isHydrating, fetchNews]); // Runs when hydration finishes
+    if (!isHydrating) fetchNews(true);
+  }, [isHydrating]);
 
   const handleSwipe = (cardIndex, swipeDirection) => {
     const article = news[cardIndex];
     if (!article) return;
-
     if (article.source && !seenSourcesRef.current.has(article.source)) {
       seenSourcesRef.current.add(article.source);
       AsyncStorage.setItem(
-        ASYNC_STORAGE_KEYS.SOURCES, 
+        ASYNC_STORAGE_KEYS.SOURCES,
         JSON.stringify([...seenSourcesRef.current])
-      ).catch(e => console.error("AsyncStorage sources write error", e));
+      ).catch(e => console.error('AsyncStorage sources write error', e));
     }
-    
-    if (swipeDirection === 'right') { // LIKE
-      likedArticleIdsRef.current = [article.id, ...likedArticleIdsRef.current].slice(0, 20);
+    if (swipeDirection === 'right') {
+      likedArticleIdsRef.current = [article.id, ...likedArticleIdsRef.current].slice(0, 30);
       AsyncStorage.setItem(
-        ASYNC_STORAGE_KEYS.LIKES, 
+        ASYNC_STORAGE_KEYS.LIKES,
         JSON.stringify(likedArticleIdsRef.current)
-      ).catch(e => console.error("AsyncStorage likes write error", e));
-    } else { // DISLIKE (left or top)
-      dislikedArticleIdsRef.current = [article.id, ...dislikedArticleIdsRef.current].slice(0, 20);
+      ).catch(e => console.error('AsyncStorage likes write error', e));
+    } else {
+      dislikedArticleIdsRef.current = [article.id, ...dislikedArticleIdsRef.current].slice(0, 30);
       AsyncStorage.setItem(
-        ASYNC_STORAGE_KEYS.DISLIKES, 
+        ASYNC_STORAGE_KEYS.DISLIKES,
         JSON.stringify(dislikedArticleIdsRef.current)
-      ).catch(e => console.error("AsyncStorage dislikes write error", e));
+      ).catch(e => console.error('AsyncStorage dislikes write error', e));
     }
-    
     setNews(prevNews => {
       const newNews = prevNews.filter((_, i) => i !== cardIndex);
-      
-      if (newNews.length < 5 && !isFetching) {
-        fetchNews(false).then((newCardsCount) => {
-          if (newCardsCount === 0 && newNews.length === 0) {
-            setSwipedAll(true);
-          }
-        });
+      if (newNews.length < 10 && !isFetchingRef.current) {
+        setTimeout(() => fetchNews(false), 300);
       }
       return newNews;
     });
@@ -271,7 +247,9 @@ const Trending = () => {
     return (
       <View style={[styles.endContainer, { backgroundColor: colors.primary }]}>
         <ActivityIndicator size="large" color={colors.secondary} />
-        <Text style={[styles.endText, { color: colors.secondary, marginTop: 12 }]}>Loading session...</Text>
+        <Text style={[styles.endText, { color: colors.secondary, marginTop: 12 }]}>
+          Loading session...
+        </Text>
       </View>
     );
   }
@@ -288,110 +266,99 @@ const Trending = () => {
       <Animated.View style={[StyleSheet.absoluteFill, { opacity }]}>
         <LinearGradient
           colors={gradientColors}
-          start={{ x: 0, y: 0.5 }} end={{ x: 1, y: 0.5 }}
+          start={{ x: 0, y: 0.5 }}
+          end={{ x: 1, y: 0.5 }}
           style={StyleSheet.absoluteFill}
         />
       </Animated.View>
 
-      {!isFetching && news.length === 0 && swipedAll && (
-        <View style={[styles.endContainer, { backgroundColor: colors.primary }]}>
-          <Text style={[styles.endText, { color: colors.secondary }]}>🎉 That's all for today!</Text>
-          <TouchableOpacity onPress={() => fetchNews(true)}>
-             <Text style={{color: colors.secondary, marginTop: 10}}>Refresh?</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-
-      {isFetching && !isHydrating && news.length > 0 && (
-         <View style={styles.fetchingMoreSpinner}>
-            <ActivityIndicator size="small" color={colors.secondary} />
-         </View>
-      )}
-
-      {news.length > 0 && (
+      {news.length > 0 ? (
         <>
           <Swiper
             ref={swiperRef}
             cards={news}
-            keyExtractor={(card) => card?.id || Math.random().toString()}
-            renderCard={(card) => card ? <Card item={card} colors={colors} /> : null}
-            
-            onSwipedLeft={(i) => handleSwipe(i, 'left')}
-            onSwipedRight={(i) => handleSwipe(i, 'right')}
-            onSwipedTop={(i) => handleSwipe(i, 'top')}
-            
+            renderCard={card => (card ? <Card item={card} colors={colors} /> : null)}
+            onSwipedLeft={i => handleSwipe(i, 'left')}
+            onSwipedRight={i => handleSwipe(i, 'right')}
+            onSwipedTop={i => handleSwipe(i, 'top')}
             onSwiped={() => setSwipeDir(null)}
-            
-            onSwipedAll={() => {
-            
-            }}
-            
             showSecondCard={news.length > 1}
-            
-            // ... (rest of Swiper props)
             cardVerticalMargin={20}
-            cardHorizontalMargin={0}
             backgroundColor="transparent"
             stackSize={3}
             stackSeparation={-10}
-            stackScale={8}
             disableBottomSwipe
             animateOverlayLabelsOpacity
             animateCardOpacity
             overlayLabels={{
-              left: {
-                title: 'DISLIKE',
-                style: {
-                  label: { backgroundColor: 'red', color: 'white', fontSize: 24 },
-                },
-              },
-              right: {
-                title: 'LIKE',
-                style: {
-                  label: { backgroundColor: 'green', color: 'white', fontSize: 24 },
-                },
-              },
+              left: { title: 'DISLIKE', style: { label: { backgroundColor: 'red', color: 'white', fontSize: 24 } } },
+              right: { title: 'LIKE', style: { label: { backgroundColor: 'green', color: 'white', fontSize: 24 } } },
             }}
-            onSwiping={(x) => {
+            onSwiping={x => {
               if (x > 0) setSwipeDir('right');
               else if (x < 0) setSwipeDir('left');
               else setSwipeDir(null);
             }}
           />
+
+          {isFetching && (
+            <View
+              style={[
+                StyleSheet.absoluteFill,
+                { justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.2)' },
+              ]}
+            >
+              <ActivityIndicator size="large" color={colors.secondary} />
+            </View>
+          )}
+
           <View style={styles.controlsContainer}>
-             <TouchableOpacity
-               onPress={() => swiperRef.current?.swipeLeft()}
-               style={[styles.controlButton, { backgroundColor: 'rgba(255,0,0,0.15)', borderColor: 'rgba(255,0,0,0.3)' }]}
-               activeOpacity={0.8}
-             >
-               <Ionicons name="thumbs-down" size={22} color="#ff4d4f" />
-             </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => swiperRef.current?.swipeLeft()}
+              style={[styles.controlButton, { backgroundColor: 'rgba(255,0,0,0.15)', borderColor: 'rgba(255,0,0,0.3)' }]}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="thumbs-down" size={22} color="#ff4d4f" />
+            </TouchableOpacity>
 
-             <TouchableOpacity
-               onPress={() => swiperRef.current?.swipeTop()}
-               style={[styles.controlButton, { backgroundColor: 'rgba(128,128,128,0.15)', borderColor: 'rgba(128,128,0.3)' }]}
-               activeOpacity={0.8}
-             >
-               <Ionicons name="remove-circle" size={22} color="#8c8c8F" />
-             </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => swiperRef.current?.swipeTop()}
+              style={[styles.controlButton, { backgroundColor: 'rgba(128,128,128,0.15)', borderColor: 'rgba(128,128,128,0.3)' }]}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="remove-circle" size={22} color="#8c8c8f" />
+            </TouchableOpacity>
 
-             <TouchableOpacity
-               onPress={() => swiperRef.current?.swipeRight()}
-               style={[styles.controlButton, { backgroundColor: 'rgba(0,200,0,0.15)', borderColor: 'rgba(0,200,0,0.3)' }]}
-               activeOpacity={0.8}
-             >
-               <Ionicons name="thumbs-up" size={22} color="#1fc16b" />
-             </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => swiperRef.current?.swipeRight()}
+              style={[styles.controlButton, { backgroundColor: 'rgba(0,200,0,0.15)', borderColor: 'rgba(0,200,0,0.3)' }]}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="thumbs-up" size={22} color="#1fc16b" />
+            </TouchableOpacity>
           </View>
         </>
+      ) : (
+        <View style={[styles.endContainer, { backgroundColor: colors.primary }]}>
+          {isFetching ? (
+            <>
+              <ActivityIndicator size="large" color={colors.secondary} />
+              <Text style={[styles.endText, { color: colors.secondary, marginTop: 10 }]}>
+                Fetching more news...
+              </Text>
+            </>
+          ) : (
+            <TouchableOpacity onPress={() => fetchNews(true)}>
+              <Text style={[styles.endText, { color: colors.secondary }]}>Reload 🔄</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       )}
     </View>
   );
 };
 
-// ------------------ STYLES ------------------
 const styles = StyleSheet.create({
-  // ... (all previous styles)
   container: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   controlsContainer: {
     position: 'absolute',
@@ -423,20 +390,39 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     justifyContent: 'flex-end',
   },
-  imageContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    borderRadius: 25,
-    overflow: 'hidden',
-  },
+  imageContainer: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: 25, overflow: 'hidden' },
   image: { width: '100%', height: '100%' },
-  authorSection: { alignItems: 'center', marginVertical: 6 },
-  author: { fontSize: 16, fontFamily: 'MonaSans-Bold', textAlign: 'center' },
-  timeAgo: { fontSize: 12, fontFamily: 'MonaSans-Regular', textAlign: 'center' },
-  title: { fontSize: 16, fontFamily: 'MonaSans-Bold', textAlign: 'center', marginVertical: 8 },
+  textContainer: {
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    borderRadius: 20,
+    padding: 12,
+    marginBottom: 8,
+  },
+  author: { fontSize: 12, fontFamily: 'MonaSans-Medium',numberOfLines:2, textAlign: 'right', color: '#f0f0f0' },
+  timeAgo: { fontSize: 12, fontFamily: 'MonaSans-Regular', textAlign: 'right', color: '#f0f0f0', marginBottom: 4 },
+  title: { fontSize: 16, fontFamily: 'MonaSans-Bold', textAlign: 'center', marginVertical: 8, color: '#f0f0f0' },
+  title2: { fontSize: 12, fontFamily: 'MonaSans-Regular', textAlign: 'center', marginVertical: 8, color: '#f0f0f0' },
+   buttonWrapper: {
+    marginTop: 12,
+    alignSelf: 'center',
+    borderRadius: 25,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 5,
+    elevation: 6,
+  },
+  button: {
+    paddingVertical: 12,
+    paddingHorizontal: 28,
+    borderRadius: 25,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 11,
+    fontFamily: 'MonaSans-Medium',
+    textAlign: 'center',
+  },
   sentimentContainer: {
     width: '100%',
     height: 8,
@@ -465,16 +451,7 @@ const styles = StyleSheet.create({
   },
   topicText: { color: '#fff', fontWeight: 'bold', fontSize: 12 },
   endContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 20 },
-  endText: { fontSize: 24, fontFamily: 'MonaSans-Bold', textAlign: 'center' },
-  // --- NEW STYLE ---
-  fetchingMoreSpinner: {
-    position: 'absolute',
-    top: height * 0.4, // Position in the middle
-    zIndex: 10,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    borderRadius: 10,
-    padding: 10,
-  }
+  endText: { fontSize: 20, fontFamily: 'MonaSans-Bold', textAlign: 'center', color: '#fff' },
 });
 
 export default Trending;
