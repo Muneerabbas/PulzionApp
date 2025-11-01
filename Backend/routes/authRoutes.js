@@ -13,7 +13,7 @@ const User = require('../models/User');
 const router = express.Router();
 router.post('/register', upload.single('photo'), registerUser);
 router.post('/login', loginUser);
-router.get('/subscribed', authMiddleware, async (req, res) => {
+router.get('/subscribe', authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('isSubscribed');
     if (!user) return res.status(404).json({ success: false, message: 'User not found' });
@@ -24,9 +24,9 @@ router.get('/subscribed', authMiddleware, async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
-router.patch('/subscribed', authMiddleware, async (req, res) => {
+router.patch('/subscribe', authMiddleware, async (req, res) => {
   try {
-    const { subscribe } = req.body; // boolean true/false
+    const { subscribe } = req.body; 
     if (typeof subscribe !== 'boolean') {
       return res.status(400).json({ success: false, message: 'subscribe must be a boolean' });
     }

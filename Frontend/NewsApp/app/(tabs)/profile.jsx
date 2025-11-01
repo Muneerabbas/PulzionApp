@@ -16,14 +16,15 @@ import { useTheme } from "../../src/context/ThemeContext";
 import { useT } from "../../src/utils/tMiddleware";
 import { useRouter } from "expo-router";
 import { LinearGradient } from 'expo-linear-gradient';
-
+import { useEffect } from "react";
+import { getSubscription, toggleSubscription } from "../../src/api/authApi";
 const Profile = () => {
   const { user, logout } = useAuth();
   const router = useRouter();
   const { colors, theme, toggleTheme } = useTheme();
   const { T, fb, fr, color, bg, flex, ai, mv, fs } = useT();
   const [subscribed, setSubscribed] = useState(false);
-
+  const [loadingSub, setLoadingSub] = useState(true);
   const handleLogout = () => {
     Alert.alert("Logout", "Are you sure you want to logout?", [
       { text: "Cancel", style: "cancel" },
@@ -37,7 +38,32 @@ const Profile = () => {
       },
     ]);
   };
+  useEffect(() => {
+    const fetchSubscription = async () => {
+      try {
+        const status = await getSubscription();
+        setSubscribed(status);
+      } catch (err) {
+        console.error("Failed to get subscription:", err);
+      } finally {
+        setLoadingSub(false);
+      }
+    };
+    fetchSubscription();
+  }, []);
 
+  const handleToggleSubscribe = async () => {
+    try {
+      setLoadingSub(true);
+      const newStatus = await toggleSubscription(!subscribed);
+      setSubscribed(newStatus);
+    } catch (err) {
+      console.error("Failed to update subscription:", err);
+      Alert.alert("Error", "Failed to update subscription");
+    } finally {
+      setLoadingSub(false);
+    }
+  };
   return (
     <SafeAreaView style={T(flex(1), bg(colors.primary))}>
       <ScrollView
@@ -70,14 +96,18 @@ const Profile = () => {
             {user?.email || "therealjason@gmail.com"}
           </Text>
         </View>
-
-        <TouchableOpacity
+  <TouchableOpacity
           activeOpacity={0.85}
           style={{ marginTop: 6, marginBottom: 10 }}
-          onPress={() => setSubscribed((s) => !s)}
+          onPress={handleToggleSubscribe}
+          disabled={loadingSub}
         >
           <LinearGradient
-            colors={subscribed ? ["#22c55e", "#16a34a"] : ["#8b5cf6", "#6366f1", "#22c55e"]}
+            colors={
+              subscribed
+                ? ["#22c55e", "#16a34a"]
+                : ["#8b5cf6", "#6366f1", "#22c55e"]
+            }
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.subscribeBtn}
@@ -88,9 +118,12 @@ const Profile = () => {
               color="#fff"
               style={{ marginRight: 8 }}
             />
-            <Text style={styles.subscribeText}>{subscribed ? "Subscribed" : "Subscribe"}</Text>
+            <Text style={styles.subscribeText}>
+              {subscribed ? "Subscribed" : "Subscribe"}
+            </Text>
           </LinearGradient>
         </TouchableOpacity>
+
 
         {/* Activity Section */}
         <Text style={[styles.sectionHeader, { color: colors.text }]}>
