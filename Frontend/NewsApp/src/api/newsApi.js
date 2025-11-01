@@ -1,7 +1,7 @@
 import { BASE_URL, NEWS_API_URL } from "./axiosInstance.js";
 import axios from "axios";
 
-const API_KEY = '01d9ee4aaee04beb96047ccfcd0a4e34';
+// const API_KEY = '4d6bebc94a5046d7bd2d64ac5331d5da';
 
 export const getNews = async () => {
     try {
@@ -101,6 +101,17 @@ export const getStats = async () => {
         return response.data;
     } catch (error) {
         throw error.response?.data || { message: 'Failed to fetch stats' };
+    }
+};
+export const getSimilarArticle = async () => {
+    try {
+        const response = await axios.post(`${BASE_URL}/recommend/similar`,{
+            articleId: item.id,
+        });
+        return response.data;
+
+    } catch (error) {
+        throw error.response?.data || { message: 'Failed to fetch similar article' };
     }
 };
 

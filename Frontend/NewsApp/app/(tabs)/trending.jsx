@@ -9,15 +9,19 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   ScrollView,
+  FlatList,
+  SafeAreaView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Swiper from 'react-native-deck-swiper';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../src/context/ThemeContext';
-import { getRecommendations } from '../../src/api/recommendService';
+import { getRecommendations, getSimilarArticles } from '../../src/api/recommendService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import * as WebBrowser from 'expo-web-browser';
+
 dayjs.extend(relativeTime);
 
 const { width, height } = Dimensions.get('window');
@@ -29,7 +33,8 @@ const ASYNC_STORAGE_KEYS = {
   SOURCES: '@NewsPulse_seenSources',
 };
 
-const Card = ({ item, colors }) => {
+
+const Card = ({ item, colors,setSimilarArticle,setSimilarScroller }) => {
   const sentimentMap = { positive: 2, neutral: 1, negative: 0 };
   const sentimentScore = sentimentMap[item?.sentiment] ?? 1;
   console.log("Item data",item)
@@ -37,6 +42,22 @@ const Card = ({ item, colors }) => {
     sentimentScore === 2 ? '#1fc16b' : sentimentScore === 1 ? '#fbbc04' : '#ff4d4f';
   const categories =
     item?.categories?.length > 0 ? item.categories.slice(0, 3) : ['News', 'Update'];
+
+
+const handleSimilarArticle = async(item) => {
+  try {
+    
+    const res = await getSimilarArticles(item?.id)
+    setSimilarArticle(res.similar)
+    setSimilarScroller(true)
+    
+  } catch (error) {
+    console.log("Error",error)
+  }
+
+
+
+}
 
   return (
     <View style={[styles.card, { backgroundColor: colors.border }]}>
@@ -90,7 +111,7 @@ const Card = ({ item, colors }) => {
       
       </View>
 
-     <TouchableOpacity activeOpacity={0.8} onPress={()=>{}} style={styles.buttonWrapper}>
+     <TouchableOpacity activeOpacity={0.8} onPress={()=>{handleSimilarArticle(item)}} style={styles.buttonWrapper}>
       <LinearGradient
         colors={['#38033dff', '#11ced8ff']}
         start={{ x: 0, y: 0 }}
@@ -120,6 +141,8 @@ const Trending = () => {
   const likedArticleIdsRef = useRef([]);
   const dislikedArticleIdsRef = useRef([]);
   const seenSourcesRef = useRef(new Set());
+  const [similarArticle, setSimilarArticle] = useState([])
+  const [similarScroller, setSimilarScroller] = useState(false)
 
   useEffect(() => {
     const hydrateState = async () => {
@@ -271,89 +294,123 @@ const Trending = () => {
           style={StyleSheet.absoluteFill}
         />
       </Animated.View>
+{
+  !similarScroller ? (
+    news.length > 0 ? (
+      <>
+        <Swiper
+          ref={swiperRef}
+          cards={news}
+          renderCard={card =>
+            card ? (
+              <Card
+                item={card}
+                colors={colors}
+                setSimilarArticle={setSimilarArticle}
+                similarScroller={similarScroller}
+                setSimilarScroller={setSimilarScroller}
+              />
+            ) : null
+          }
+          onSwipedLeft={i => { handleSwipe(i, 'left'); fetchNews(false); }}
+          onSwipedRight={i => { handleSwipe(i, 'right'); fetchNews(false); }}
+          onSwipedTop={i => { handleSwipe(i, 'top'); fetchNews(false); }}
+          onSwiped={() => setSwipeDir(null)}
+          showSecondCard={news.length > 1}
+          cardVerticalMargin={20}
+          backgroundColor="transparent"
+          stackSize={3}
+          stackSeparation={-10}
+          disableBottomSwipe
+          animateOverlayLabelsOpacity
+          animateCardOpacity
+          overlayLabels={{
+            left: {
+              title: 'DISLIKE',
+              style: { label: { backgroundColor: 'red', color: 'white', fontSize: 24 } },
+            },
+            right: {
+              title: 'LIKE',
+              style: { label: { backgroundColor: 'green', color: 'white', fontSize: 24 } },
+            },
+          }}
+          onSwiping={x => {
+            if (x > 0) setSwipeDir('right');
+            else if (x < 0) setSwipeDir('left');
+            else setSwipeDir(null);
+          }}
+        />
 
-      {news.length > 0 ? (
-        <>
-          <Swiper
-            ref={swiperRef}
-            cards={news}
-            renderCard={card => (card ? <Card item={card} colors={colors} /> : null)}
-            onSwipedLeft={i => handleSwipe(i, 'left')}
-            onSwipedRight={i => handleSwipe(i, 'right')}
-            onSwipedTop={i => handleSwipe(i, 'top')}
-            onSwiped={() => setSwipeDir(null)}
-            showSecondCard={news.length > 1}
-            cardVerticalMargin={20}
-            backgroundColor="transparent"
-            stackSize={3}
-            stackSeparation={-10}
-            disableBottomSwipe
-            animateOverlayLabelsOpacity
-            animateCardOpacity
-            overlayLabels={{
-              left: { title: 'DISLIKE', style: { label: { backgroundColor: 'red', color: 'white', fontSize: 24 } } },
-              right: { title: 'LIKE', style: { label: { backgroundColor: 'green', color: 'white', fontSize: 24 } } },
-            }}
-            onSwiping={x => {
-              if (x > 0) setSwipeDir('right');
-              else if (x < 0) setSwipeDir('left');
-              else setSwipeDir(null);
-            }}
-          />
-
-          {isFetching && (
-            <View
-              style={[
-                StyleSheet.absoluteFill,
-                { justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.2)' },
-              ]}
-            >
-              <ActivityIndicator size="large" color={colors.secondary} />
-            </View>
-          )}
-
-          <View style={styles.controlsContainer}>
-            <TouchableOpacity
-              onPress={() => swiperRef.current?.swipeLeft()}
-              style={[styles.controlButton, { backgroundColor: 'rgba(255,0,0,0.15)', borderColor: 'rgba(255,0,0,0.3)' }]}
-              activeOpacity={0.8}
-            >
-              <Ionicons name="thumbs-down" size={22} color="#ff4d4f" />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => swiperRef.current?.swipeTop()}
-              style={[styles.controlButton, { backgroundColor: 'rgba(128,128,128,0.15)', borderColor: 'rgba(128,128,128,0.3)' }]}
-              activeOpacity={0.8}
-            >
-              <Ionicons name="remove-circle" size={22} color="#8c8c8f" />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => swiperRef.current?.swipeRight()}
-              style={[styles.controlButton, { backgroundColor: 'rgba(0,200,0,0.15)', borderColor: 'rgba(0,200,0,0.3)' }]}
-              activeOpacity={0.8}
-            >
-              <Ionicons name="thumbs-up" size={22} color="#1fc16b" />
-            </TouchableOpacity>
+        {isFetching && (
+          <View
+            style={[
+              StyleSheet.absoluteFill,
+              {
+                justifyContent: 'center',
+                alignItems: 'center',
+                backgroundColor: 'rgba(0,0,0,0.2)',
+              },
+            ]}
+          >
+            <ActivityIndicator size="large" color={colors.secondary} />
           </View>
-        </>
-      ) : (
-        <View style={[styles.endContainer, { backgroundColor: colors.primary }]}>
-          {isFetching ? (
-            <>
-              <ActivityIndicator size="large" color={colors.secondary} />
-              <Text style={[styles.endText, { color: colors.secondary, marginTop: 10 }]}>
-                Fetching more news...
+        )}
+      </>
+    ) : (
+      <View style={[styles.endContainer, { backgroundColor: colors.primary }]}>
+        {isFetching ? (
+          <>
+            <ActivityIndicator size="large" color={colors.secondary} />
+            <Text style={[styles.endText, { color: colors.secondary, marginTop: 10 }]}>
+              Fetching more news...
+            </Text>
+          </>
+        ) : (
+          <TouchableOpacity onPress={() => fetchNews(true)}>
+            <Text style={[styles.endText, { color: colors.secondary }]}>Reload 🔄</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    )
+  ) : (
+    <SafeAreaView style={{ flex: 1, width: width * 0.95, alignSelf: 'center',paddingVertical:40,paddingBottom:70 }}>
+      <View style={{ flexDirection: 'row', gap:20, alignItems: 'center', marginBottom: 8 }}>
+        <TouchableOpacity onPress={() => setSimilarScroller(false)}>
+          <Ionicons name="chevron-back" size={24} color={colors.secondary} />
+        </TouchableOpacity>
+        <Text style={[styles.endText, { color: colors.secondary }]}>Similar Articles</Text>
+    
+      </View>
+      
+      <FlatList
+        data={similarArticle}
+        keyExtractor={(item, index) => item?.id?.toString?.() || item?.url || `sim-${index}`}
+        showsVerticalScrollIndicator={false}
+        ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            onPress={() => item?.url && WebBrowser.openBrowserAsync(item.url)}
+            style={[styles.simCard, { backgroundColor: colors.border }]}
+            activeOpacity={0.85}
+          >
+            <Image source={{ uri: item?.urlToImage }} style={styles.simThumb} resizeMode="cover" />
+            <View style={styles.simInfo}>
+              <Text numberOfLines={3} style={[styles.simTitle, { color: colors.secondary }]}>
+                {item?.title || 'Untitled'}
               </Text>
-            </>
-          ) : (
-            <TouchableOpacity onPress={() => fetchNews(true)}>
-              <Text style={[styles.endText, { color: colors.secondary }]}>Reload 🔄</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      )}
+              <Text style={[styles.simMeta, { color: colors.muted }]}>
+                {(item?.source || item?.source_name || 'Unknown')} • {item?.published_at ? dayjs(item.published_at).format('DD MMM YYYY') : ''}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        )}
+        contentContainerStyle={{ paddingVertical: 8, paddingBottom: 24 }}
+      />
+    </SafeAreaView>
+  )
+}
+
+ 
     </View>
   );
 };
@@ -452,6 +509,22 @@ const styles = StyleSheet.create({
   topicText: { color: '#fff', fontWeight: 'bold', fontSize: 12 },
   endContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 20 },
   endText: { fontSize: 20, fontFamily: 'MonaSans-Bold', textAlign: 'center', color: '#fff' },
+  // Similar list styles
+  simCard: {
+    flexDirection: 'row',
+    borderRadius: 16,
+    padding: 12,
+    alignItems: 'center',
+  },
+  simThumb: {
+    width: 72,
+    height: 90,
+    borderRadius: 12,
+    backgroundColor: '#ccc',
+  },
+  simInfo: { flex: 1, marginLeft: 12 },
+  simTitle: { fontSize: 16, fontFamily: 'MonaSans-Bold' },
+  simMeta: { marginTop: 6, fontSize: 13, fontFamily: 'MonaSans-Regular' },
 });
 
 export default Trending;

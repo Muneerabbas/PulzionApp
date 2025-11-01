@@ -8,7 +8,9 @@ import { ThemeProvider, useTheme } from "../src/context/ThemeContext";
 import { AuthProvider, useAuth } from "../src/context/AuthContext";
 import { BookmarkProvider } from "../src/context/BookmarkContext";
 import 'react-native-reanimated';
+
 import { enableLayoutAnimation } from 'react-native-reanimated';
+import { BottomSheetProvider } from "../src/context/bottomSheetContext";
 SplashScreen.preventAutoHideAsync();
 
 function LayoutContent() {
@@ -104,11 +106,13 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider>
+      
       <AuthProvider>
         <BookmarkProvider>
         <LayoutContent />
         </BookmarkProvider>
       </AuthProvider>
+     
     </ThemeProvider>
   );
 }
