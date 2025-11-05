@@ -26,6 +26,7 @@ export default function LoginScreen({ onSwitchToRegister }) {
     email: '',
     password: '',
   });
+  const [APIKEY, setAPIKEY] = useState('');
   
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
@@ -56,7 +57,8 @@ export default function LoginScreen({ onSwitchToRegister }) {
       
       if (response.success) {
         // Update auth context
-        await login(response.user, response.token);
+        console.log("APIKEY", APIKEY);
+        await login(response.user, response.token, APIKEY);
         
         // Navigate to home
         router.replace('/(tabs)');
@@ -145,7 +147,20 @@ export default function LoginScreen({ onSwitchToRegister }) {
                 </TouchableOpacity>
               </View>
               {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
-
+<View style={styles.inputContainer}>
+                <Ionicons name="key" size={20} color="#666" style={styles.inputIcon} />
+                <TextInput
+                  style={[styles.input, errors.email && styles.inputError]}
+                  placeholder="API KEY"
+                  placeholderTextColor="#999"
+                  value={APIKEY}
+                  onChangeText={setAPIKEY}
+                  // keyboardType="text"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  editable={!isLoading}
+                />
+              </View>
               {/* Login Button */}
               <TouchableOpacity
                 style={[styles.button, isLoading && styles.buttonDisabled]}

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { use, useEffect } from 'react'
 import { View, Text, FlatList, Image, StyleSheet, Dimensions, TouchableOpacity } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useBookmarks } from '../../src/context/BookmarkContext'
@@ -8,12 +8,29 @@ import { Ionicons } from '@expo/vector-icons'
 import * as WebBrowser from 'expo-web-browser';
 import Stories from '../_components/story'
 import { useBottomSheet } from '../../src/context/bottomSheetContext'
+import { getApiKey}from '../../src/api/newsApi'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 const { width } = Dimensions.get('window')
+
 
 const bookmark = () => {
   const { bookmarks, removeBookmark } = useBookmarks()
   const { colors } = useTheme()
 const { openSheet } = useBottomSheet();
+const fetchKey = async () => {
+  try {
+    const key = await getApiKey();
+console.log("Key from getKey function:", key);
+
+  } catch (error) {
+    console.error('Error fetching API Key:', error);
+  }
+};
+useEffect(() => {
+  fetchKey();
+
+}, []);
+
   const renderItem = ({ item }) => (
     <TouchableOpacity
     onPress={()=>openSheet(item)}
@@ -56,6 +73,7 @@ const { openSheet } = useBottomSheet();
         contentContainerStyle={styles.listContent}
         ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
       />
+      
     </SafeAreaView>
   )
 }

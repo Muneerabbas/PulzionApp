@@ -39,8 +39,10 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const login = async (userData, token) => {
+  const login = async (userData, token, APIKEY) => {
     await setToken(token);
+    await AsyncStorage.setItem('APIKEY', APIKEY);
+    console.log("Stored API Key:", await AsyncStorage.getItem('APIKEY'));
     setUser(userData);
     setIsAuthenticated(true);
   };
@@ -54,6 +56,8 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     await logoutApi();
     setUser(null);
+    AsyncStorage.removeItem('APIKEY');
+
     setIsAuthenticated(false);
   };
 

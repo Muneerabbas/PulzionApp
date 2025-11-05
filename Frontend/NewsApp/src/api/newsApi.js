@@ -1,122 +1,120 @@
-import { BASE_URL, NEWS_API_URL } from "./axiosInstance.js";
 import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { BASE_URL, NEWS_API_URL } from "./axiosInstance.js";
 
- const API_KEY = '4d6bebc94a5046d7bd2d64ac5331d5da';
+// Helper to fetch API key dynamically
+export const getApiKey = async () => {
+  try {
+    const apiKey = await AsyncStorage.getItem("APIKEY");
+    if (!apiKey) throw new Error("API key not found. Please set it first.");
+    return apiKey;
+  } catch (error) {
+    console.error("Error fetching API key:", error);
+    throw error;
+  }
+};
+
+// ========== News Fetchers ==========
 
 export const getNews = async () => {
-    try {
-        const response = await axios.get(`${NEWS_API_URL}/everything?q=trending&sortBy=popularity&language=en&apiKey=${API_KEY}`);
-        return response.data;
-    } catch (error) {
-        throw error.response?.data || { message: 'Failed to fetch news' };
-    }
+  const apiKey = await getApiKey();
+  const response = await axios.get(
+    `${NEWS_API_URL}/everything?q=trending&sortBy=popularity&language=en&apiKey=${apiKey}`
+  );
+  return response.data;
 };
 
 export const getAllNews = async (n) => {
-    try {
-        if (!n) {
-            const response = await axios.get(`${NEWS_API_URL}/top-headlines?language=en&apiKey=${API_KEY}`);
-            return response;
-        }
-        const response = await axios.get(`${NEWS_API_URL}/top-headlines?sources=${n}&apiKey=${API_KEY}`);
-        return response;
-    } catch (error) {
-        throw error.response?.data || { message: 'Failed to fetch news' };
-    }
+    console.log("Source in getAllNews:", n);
+  const apiKey = await getApiKey();
+  const endpoint = n
+    ? `${NEWS_API_URL}/top-headlines?sources=${n}&apiKey=${apiKey}`
+    : `${NEWS_API_URL}/top-headlines?language=en&apiKey=${apiKey}`;
+    console.log("Endpoint in getAllNews:", endpoint);
+  const response = await axios.get(endpoint);
+  console.log("Response from getAllNews:", response.data);
+  return response;
 };
 
 export const getTopHeadlines = async () => {
-    try {
-        const response = await axios.get(`${NEWS_API_URL}/top-headlines?country=us&apiKey=${API_KEY}`);
-        return response.data;
-    } catch (error) {
-        throw error.response?.data || { message: 'Failed to fetch top headlines' };
-    }
+  const apiKey = await getApiKey();
+  const response = await axios.get(
+    `${NEWS_API_URL}/top-headlines?country=us&apiKey=${apiKey}`
+  );
+  return response.data;
 };
 
 export const getBusinessNews = async () => {
-    try {
-        const response = await axios.get(`${NEWS_API_URL}/top-headlines?category=business&apiKey=${API_KEY}`);
-        return response.data;
-    } catch (error) {
-        throw error.response?.data || { message: 'Failed to fetch business news' };
-    }
+  const apiKey = await getApiKey();
+  const response = await axios.get(
+    `${NEWS_API_URL}/top-headlines?category=business&apiKey=${apiKey}`
+  );
+  return response.data;
 };
 
 export const getEntertainmentNews = async () => {
-    try {
-        const response = await axios.get(`${NEWS_API_URL}/top-headlines?category=entertainment&apiKey=${API_KEY}`);
-        return response.data;
-    } catch (error) {
-        throw error.response?.data || { message: 'Failed to fetch entertainment news' };
-    }
+  const apiKey = await getApiKey();
+  const response = await axios.get(
+    `${NEWS_API_URL}/top-headlines?category=entertainment&apiKey=${apiKey}`
+  );
+  return response.data;
 };
+
 export const getSportsNews = async () => {
-    try {
-        const response = await axios.get(`${NEWS_API_URL}/top-headlines?category=sports&apiKey=${API_KEY}`);
-        return response.data;
-    } catch (error) {
-        throw error.response?.data || { message: 'Failed to fetch sports news' };
-    }
+  const apiKey = await getApiKey();
+  const response = await axios.get(
+    `${NEWS_API_URL}/top-headlines?category=sports&apiKey=${apiKey}`
+  );
+  return response.data;
 };
+
 export const getHealthNews = async () => {
-    try {
-        const response = await axios.get(`${NEWS_API_URL}/top-headlines?category=health&apiKey=${API_KEY}`);
-        return response.data;
-    } catch (error) {
-        throw error.response?.data || { message: 'Failed to fetch health news' };
-    }
+  const apiKey = await getApiKey();
+  const response = await axios.get(
+    `${NEWS_API_URL}/top-headlines?category=health&apiKey=${apiKey}`
+  );
+  return response.data;
 };
+
 export const getScienceNews = async () => {
-    try {
-        const response = await axios.get(`${NEWS_API_URL}/top-headlines?category=science&apiKey=${API_KEY}`);
-        return response.data;
-    } catch (error) {
-        throw error.response?.data || { message: 'Failed to fetch science news' };
-    }
+  const apiKey = await getApiKey();
+  const response = await axios.get(
+    `${NEWS_API_URL}/top-headlines?category=science&apiKey=${apiKey}`
+  );
+  return response.data;
 };
+
 export const getTechnologyNews = async () => {
-    try {
-        const response = await axios.get(`${NEWS_API_URL}/top-headlines?category=technology&apiKey=${API_KEY}`);
-        return response.data;
-    } catch (error) {
-        throw error.response?.data || { message: 'Failed to fetch technology news' };
-    }
+  const apiKey = await getApiKey();
+  const response = await axios.get(
+    `${NEWS_API_URL}/top-headlines?category=technology&apiKey=${apiKey}`
+  );
+  return response.data;
 };
 
-//Bottom Data Fetching 
 export const getBottomNews = async ({ query }) => {
-    try {
-        const response = await axios.get(`${NEWS_API_URL}/top-headlines?q=${query}&apiKey=${API_KEY}`);
-        return response.data;
-    } catch (error) {
-        throw error.response?.data || { message: 'Failed to fetch' };
-    }
+  const apiKey = await getApiKey();
+  const response = await axios.get(
+    `${NEWS_API_URL}/top-headlines?q=${query}&apiKey=${apiKey}`
+  );
+  return response.data;
 };
 
-//fetch Stats
+// ========== Other APIs ==========
+
 export const getStats = async () => {
-    try {
-        const response = await axios.get(`${BASE_URL}/stats`);
-        return response.data;
-    } catch (error) {
-        throw error.response?.data || { message: 'Failed to fetch stats' };
-    }
+  const response = await axios.get(`${BASE_URL}/stats`);
+  return response.data;
 };
+
 export const factCheckArticle = async (contentData) => {
-  try {
-    const factCheckPayload = buildFactCheckObject(contentData);
-    console.log("factCheckPayload",factCheckPayload)
-    const response = await axios.post(`${BASE_URL}/factcheck`, factCheckPayload);
-    return response.data;
-  } catch (error) {
-    console.error('❌ Fact check failed:', error);
-    throw new Error(error.response?.data?.message || 'Failed to fetch fact-check data');
-  }
+  const factCheckPayload = buildFactCheckObject(contentData);
+  const response = await axios.post(`${BASE_URL}/factcheck`, factCheckPayload);
+  return response.data;
 };
+
 const buildFactCheckObject = (contentData, rating = "Unverified") => {
   if (!contentData) throw new Error("contentData is required");
-
   return {
     claims: [
       {
@@ -133,17 +131,10 @@ const buildFactCheckObject = (contentData, rating = "Unverified") => {
     ],
   };
 };
-export const getSimilarArticle = async () => {
-    try {
-        const response = await axios.post(`${BASE_URL}/recommend/similar`,{
-            articleId: item.id,
-        });
-        return response.data;
 
-    } catch (error) {
-        throw error.response?.data || { message: 'Failed to fetch similar article' };
-    }
+export const getSimilarArticle = async (item) => {
+  const response = await axios.post(`${BASE_URL}/recommend/similar`, {
+    articleId: item.id,
+  });
+  return response.data;
 };
-
-
-
